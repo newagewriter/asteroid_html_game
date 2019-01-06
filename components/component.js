@@ -102,17 +102,21 @@ class CText extends Component {
 }
 
 class Player extends CImage {
+
     constructor(width, height, background, x, y) {
         super(width, height, background, x, y)
-        this.gravity = 0.05;
-        this.gravitySpeed = 0;
-        this.bounce = 0.5;
+        this.rockets = [];
+        this.shootSeries = 5;
+        this.shootSound = new Sound("assets/sounds/shoot.mp3")
+        // this.gravity = 0.05;
+        // this.gravitySpeed = 0;
+        // this.bounce = 0.5;
     }
 
     newPos() {
-        this.gravitySpeed += this.gravity;
+        // this.gravitySpeed += this.gravity;
         this.x += this.speedX;
-        this.y += this.speedY + this.gravitySpeed; 
+        this.y += this.speedY; 
         this.hitBottom();
         this.hitTop();
     }
@@ -139,9 +143,33 @@ class Player extends CImage {
             }
         }
     }
+    shoot() {
+        if (this.shootSeries % 5 == 0) {
+            this.rockets.push(new Rocket(10, 13, "assets/rocket_missile.png", this.x + (this.width/2), this.y))
+            this.shootSound.stop()
+            this.shootSound.play()
+        }
+        this.shootSeries++;
+    }
+
+    shootRelease() {
+        this.shootSeries = 5;
+    }
+
+    update(canvas) {
+        super.update(canvas)
+        this.rockets.forEach(function(val, index, array) {
+            val.y -= 5;
+            val.update(canvas)
+        })
+    }
 }
 
 class Asteroid extends CImage {
+    constructor(width, height, image, x, y) {
+        super(width, height, image, x, y)
+        this.life = 100;
+    }
     hitTest(otherobj) {
         var otherleft = otherobj.x;
         var otherright = otherobj.x + (otherobj.width);
@@ -160,15 +188,6 @@ class Asteroid extends CImage {
             return true
         }
         return false
-        
-        var crash = true;
-        if ((mybottom < othertop) ||
-        (mytop > otherbottom) ||
-        (myright < otherleft) ||
-        (myleft > otherright)) {
-        crash = false;
-        }
-        return crash;
     }
 
     hitWithPoint(x, y) {
@@ -180,5 +199,11 @@ class Asteroid extends CImage {
         if (r <=  + Math.sqrt(a*a + b*b)) {
             return true
         }
+    }
+}
+
+class Rocket extends CImage {
+    update(canvas) {
+        super.update(canvas)
     }
 }

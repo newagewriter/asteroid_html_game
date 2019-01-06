@@ -8,10 +8,15 @@ class Sound {
         document.body.appendChild(this.sound);
     }
 
+    setSource(source) {
+        this.sound.src = source;
+    }
+
     play() {
         this.sound.play();
     }
     stop() {
-        this.sound.stop();
+        this.sound.pause();
+        this.sound.currentTime = 0;
     }
 }
