@@ -108,6 +108,8 @@ class Player extends CImage {
         this.rockets = [];
         this.shootSeries = 5;
         this.shootSound = new Sound("assets/sounds/shoot.mp3")
+        this.rocketFactory = new RocketFactory("Rocket");
+        this.bonus = null;
         // this.gravity = 0.05;
         // this.gravitySpeed = 0;
         // this.bounce = 0.5;
@@ -145,7 +147,12 @@ class Player extends CImage {
     }
     shoot() {
         if (this.shootSeries % 5 == 0) {
-            this.rockets.push(new Rocket(10, 13, "assets/rocket_missile.png", this.x + (this.width/2), this.y))
+            if (this.bonus != null && this.bonus.type == "rocket") {
+                var f = new RocketFactory("BigRocket");
+                this.rockets.push(f.create(this.x + (this.width/2), this.y))
+            } else {
+                this.rockets.push(this.rocketFactory.create(this.x + (this.width/2), this.y))
+            }
             this.shootSound.stop()
             this.shootSound.play()
         }
@@ -156,8 +163,19 @@ class Player extends CImage {
         this.shootSeries = 5;
     }
 
+    setBonus(bonus) {
+        this.bonus = bonus
+    }
+
     update(canvas) {
         super.update(canvas)
+        if (this.bonus != null) {
+            this.bonus.time -= 1000 / this.game.fps
+            if (this.bonus.time <= 0) {
+                this.bonus = null;
+            }
+        }
+        
         this.rockets.forEach(function(val, index, array) {
             val.y -= 5;
             val.update(canvas)
@@ -166,9 +184,9 @@ class Player extends CImage {
 }
 
 class Asteroid extends CImage {
-    constructor(width, height, image, x, y) {
+    constructor(width, height, image, x, y, life) {
         super(width, height, image, x, y)
-        this.life = 100;
+        this.life = life;
     }
     hitTest(otherobj) {
         var otherleft = otherobj.x;
@@ -202,8 +220,46 @@ class Asteroid extends CImage {
     }
 }
 
+class RocketFactory {
+    constructor(rocketType) {
+        this.rocketType = rocketType
+    }
+
+    create(x, y) {
+        return eval("new " + this.rocketType + "(" + x + ", " + y + ")")
+    }
+
+    setRocketType(type) {
+        this.rocketType = type;
+    }
+}
+
 class Rocket extends CImage {
+    constructor(x, y) {
+        super(13, 19, "assets/rocket_missile.png", x, y)
+        this.hit = 10;
+    }
+
     update(canvas) {
         super.update(canvas)
+    }
+}
+
+class BigRocket extends CImage {
+    constructor(x, y) {
+        super(20, 28, "assets/bigrocket_missile.png", x, y)
+        this.hit = 100;
+    }
+
+    update(canvas) {
+        super.update(canvas)
+    }
+}
+
+class Bonus extends Component {
+    constructor(x, y) {
+        super(20, 20, "red", x, y)
+        this.time = 10000
+        this.type = "rocket"
     }
 }

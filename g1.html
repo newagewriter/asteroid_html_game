@@ -40,9 +40,8 @@ canvas {
     const PLAYER_WIDTH = 35
     const PLAYER_HEIGHT = 50  
 
-    const ASTERIOD_CREATE_TIME = 100
     const ASTERIOD_COUNT_PER_TIME = 3
-    const ASTERIOD_SPEED = 10
+    const ASTERIOD_SPEED = 6
     const ASTEROID_MAX_SIZE = 100
     const ASTEROID_MIN_SIZE = 50
     const GAME_WIDTH = 700
@@ -51,18 +50,52 @@ canvas {
     const DEFEATE_ASTEROID_POINTS = 20
 
     var userScores = []
-    var myGamePiece;
+    var player;
     var userName = "Unknown"
     var asteroids = [];
+    var bonuses = [];
     this.keys = [];
     var myScore;
     var mySound = null;
+
+    var map = {
+        onNextFrame : function(game) {
+            console.log("level 1");
+            var createTime = 80;
+            var count = 1
+            var asteroidLife = 100;
+            if (game.frameNo == 1 || everyInterval(createTime)) {
+                createAsteroidsIn(game.canvas.width, ASTEROID_MAX_SIZE, count, asteroidLife);
+            }
+        }
+    }
+    var map2 = {
+        onNextFrame : function(game) {
+            console.log("level 2");
+            var createTime = 70;
+            var count = 3
+            var asteroidLife = 150;
+            if (game.frameNo == 1 || everyInterval(createTime)) {
+                createAsteroidsIn(game.canvas.width, ASTEROID_MAX_SIZE, count, asteroidLife);
+            }
+        }
+    }
     var renderCallback = {
         onUpdate : function() {
             var x, y;
             var asteroidToRemove = []
+            var bonusToRemove = []
+            bonuses.forEach(item => {
+                item.y += 1;
+                item.update(myGameArea.canvas)
+                if (player.hitTest(item)) {
+                    player.setBonus(item)
+                    bonusToRemove.push(item)
+                }
+            })
+            bonuses = bonuses.filter( item => !bonusToRemove.includes(item))
             for (i = 0; i < asteroids.length; i += 1) {
-                if (myGamePiece.hitTest(asteroids[i])) {
+                if (player.hitTest(asteroids[i])) {
                     mySound.setSource("bounce.mp3")
                     mySound.play();
                     gameOver();
@@ -72,35 +105,47 @@ canvas {
                     asteroidToRemove.push(asteroids[i])
                 }
                 var rocketsToRemove = []
-                myGamePiece.rockets.forEach(function(val, index, array) {
+                player.rockets.forEach(function(val, index, array) {
                     if (val.hitTest(asteroids[i])) {
-                        asteroids[i].life -= 10;
-                        rocketsToRemove.push(val)
+                        asteroids[i].life -= val.hit;
+                        rocketsToRemove.push(val);
+                    }
+                    if (val.y < 0) {
+                         rocketsToRemove.push(val);
                     }
                 })
-                myGamePiece.rockets = myGamePiece.rockets.filter(item => !rocketsToRemove.includes(item))
+                player.rockets = player.rockets.filter(item => !rocketsToRemove.includes(item))
 
-                if (asteroids[i].life < 0) {
+                if (asteroids[i].life <= 0) {
                     mySound.setSource("assets/sounds/defeate.mp3")
                     mySound.play()
                     asteroidToRemove.push(asteroids[i])
                     myGameArea.score += DEFEATE_ASTEROID_POINTS
+                    var rand = Math.floor(Math.random() * 10)
+                    if (rand == 1) {
+                        bonuses.push(new Bonus(asteroids[i].x, asteroids[i].y))
+                    }
                     
                 }
             }
             asteroids = asteroids.filter(item => !asteroidToRemove.includes(item))
         
-            myGameArea.frameNo += 1;
             myGameArea.score += SCORE_BY_FRAME;
-            map.onNextFrame(myGameArea)
             for (i = 0; i < asteroids.length; i += 1) {
                 asteroids[i].y += ASTERIOD_SPEED;
                 asteroids[i].update(myGameArea.canvas);
             }
-            movePlayerIfNeeded(myGamePiece);
+            movePlayerIfNeeded(player);
             myScore.text = "SCORE: " + myGameArea.score;
             myScore.update(myGameArea.canvas);
-            myGamePiece.update(myGameArea.canvas);
+            player.update(myGameArea.canvas);
+            if (myGameArea.map == map && myGameArea.score > 1000) {
+                myGameArea.setLevel(null)
+                asteroids = [];
+            }
+            if (myGameArea.map == null) {
+                myGameArea.setLevel(map2)
+            }
         },
         onKeyDown : function(event) {
             keys = (self.keys || [])
@@ -120,14 +165,12 @@ canvas {
         var screen = document.getElementById("endScreen")
         screen.style.display = "none";
         myGameArea = new GameArea(GAME_WIDTH, GAME_HEIGHT)
-        myGamePiece = new Player(PLAYER_WIDTH, PLAYER_HEIGHT, PLAYER_IMG_SOURCE, (myGameArea.width - PLAYER_WIDTH) / 2, myGameArea.height - 20);
+        player = new Player(PLAYER_WIDTH, PLAYER_HEIGHT, PLAYER_IMG_SOURCE, (myGameArea.width - PLAYER_WIDTH) / 2, myGameArea.height - 20);
         myScore = new CText("30px", "Consolas", "black", 40, 40, "text");
         if (mySound == null)
             mySound = new Sound("bounce.mp3");
         myGameArea.setBackground("background.jpg", true)
-        map.asteroidCount = 1;
-        map.duration = ASTERIOD_CREATE_TIME;
-        myGameArea.start(myGamePiece, renderCallback);
+        myGameArea.start(player, map, renderCallback);
     }
 
     function gameOver() {
@@ -166,16 +209,16 @@ canvas {
 
     function movePlayerIfNeeded(player) {
         // if (myGameArea.x && myGameArea.y) {
-            //     myGamePiece.x = myGameArea.x;
-            //     myGamePiece.y = myGameArea.y;
+            //     player.x = myGameArea.x;
+            //     player.y = myGameArea.y;
             // }
             player.speedX = 0;
             player.speedY = 0;
             moveByKeys(keys)
             player.newPos();
             // if (myGameArea.x && myGameArea.y) {
-            //     myGamePiece.x = myGameArea.x;
-            //     myGamePiece.y = myGameArea.y;
+            //     player.x = myGameArea.x;
+            //     player.y = myGameArea.y;
             // }
     }
 
@@ -196,7 +239,7 @@ canvas {
         if (keys && keys[32]) {
             //accelerate(-0.2)
             
-            myGamePiece.shoot()
+            player.shoot()
             mySound.play()
         }
         if (b == 0) {
@@ -205,20 +248,20 @@ canvas {
     }
 
     function move(dir) {
-        myGamePiece.image.src = PLAYER_IMG_SOURCE;
-        if (dir == "up") {myGamePiece.speedY = -PLAYER_SPEED; }
-        if (dir == "down") {myGamePiece.speedY = PLAYER_SPEED; }
-        if (dir == "left") {myGamePiece.speedX = -PLAYER_SPEED; }
-        if (dir == "right") {myGamePiece.speedX = PLAYER_SPEED; }
+        player.image.src = PLAYER_IMG_SOURCE;
+        if (dir == "up") {player.speedY = -PLAYER_SPEED; }
+        if (dir == "down") {player.speedY = PLAYER_SPEED; }
+        if (dir == "left") {player.speedX = -PLAYER_SPEED; }
+        if (dir == "right") {player.speedX = PLAYER_SPEED; }
     }
 
     function clearmove() {
-        myGamePiece.image.src = PLAYER_IMG_SOURCE;
-        myGamePiece.speedX = 0;
-        myGamePiece.speedY = 0;
+        player.image.src = PLAYER_IMG_SOURCE;
+        player.speedX = 0;
+        player.speedY = 0;
     }
 
-    function createAsteroidsIn(x, maxSize, count) {
+    function createAsteroidsIn(x, maxSize, count, life) {
         var eX = []
         var w = myGameArea.canvas.width - maxSize
         for (i = 0; i < count; ++i) {
@@ -229,28 +272,16 @@ canvas {
             }
             eX.push(x)
             height = Math.floor(Math.random()*(maxSize - ASTEROID_MIN_SIZE + 1)) + ASTEROID_MIN_SIZE;
-            asteroids.push(new Asteroid(height, height, "asteroid.png", x, y));
+            asteroids.push(new Asteroid(height, height, "asteroid.png", x, y, life));
         }
     }
 
     // function accelerate(gravity) {
-    //     myGamePiece.gravity = gravity
+    //     player.gravity = gravity
     // }
     function everyInterval(n) {
             return (myGameArea.frameNo / n) % 1 == 0 
         }
-
-    var map = {
-        asteroidCount: 1,
-        duration: ASTERIOD_CREATE_TIME,
-        onNextFrame : function(game) {
-            if (game.frameNo == 1 || everyInterval(Math.floor(this.duration))) {
-                createAsteroidsIn(game.canvas.width, ASTEROID_MAX_SIZE, Math.floor(this.asteroidCount));
-                this.asteroidCount += 0.05
-                this.duration -= 0.5
-            }
-        }
-    }
 
 </script>
 <div id="startScreen">
