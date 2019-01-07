@@ -66,7 +66,9 @@ class GameArea {
             game.background.newPos();
             game.background.update(game.canvas)
         }
-        this.map.onNextFrame(game)
+        if (game.map != null) {
+            game.map.onNextFrame(game)
+        }
         if (game.listener != null) {
             game.listener.onUpdate()
         }

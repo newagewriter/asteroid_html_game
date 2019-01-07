@@ -41,7 +41,7 @@ canvas {
     const PLAYER_HEIGHT = 50  
 
     const ASTERIOD_COUNT_PER_TIME = 3
-    const ASTERIOD_SPEED = 6
+    const ASTERIOD_SPEED = 5
     const ASTEROID_MAX_SIZE = 100
     const ASTEROID_MIN_SIZE = 50
     const GAME_WIDTH = 700
@@ -62,7 +62,7 @@ canvas {
         onNextFrame : function(game) {
             console.log("level 1");
             var createTime = 80;
-            var count = 1
+            var count = 2
             var asteroidLife = 100;
             if (game.frameNo == 1 || everyInterval(createTime)) {
                 createAsteroidsIn(game.canvas.width, ASTEROID_MAX_SIZE, count, asteroidLife);
@@ -70,10 +70,15 @@ canvas {
         }
     }
     var map2 = {
+        delay: 120,
         onNextFrame : function(game) {
+            if (this.delay > 0) {
+                this.delay--;
+                return;
+            }
             console.log("level 2");
-            var createTime = 70;
-            var count = 3
+            var createTime = 80;
+            var count = 1
             var asteroidLife = 150;
             if (game.frameNo == 1 || everyInterval(createTime)) {
                 createAsteroidsIn(game.canvas.width, ASTEROID_MAX_SIZE, count, asteroidLife);
@@ -121,7 +126,7 @@ canvas {
                     mySound.play()
                     asteroidToRemove.push(asteroids[i])
                     myGameArea.score += DEFEATE_ASTEROID_POINTS
-                    var rand = Math.floor(Math.random() * 10)
+                    var rand = Math.floor(Math.random() * 5)
                     if (rand == 1) {
                         bonuses.push(new Bonus(asteroids[i].x, asteroids[i].y))
                     }
@@ -144,6 +149,7 @@ canvas {
                 asteroids = [];
             }
             if (myGameArea.map == null) {
+                debugger
                 myGameArea.setLevel(map2)
             }
         },
@@ -263,7 +269,9 @@ canvas {
 
     function createAsteroidsIn(x, maxSize, count, life) {
         var eX = []
+        var newAsteroids = [];
         var w = myGameArea.canvas.width - maxSize
+        // TODO detect why game stoped when add more tha one asteriods in the same time
         for (i = 0; i < count; ++i) {
             y = 0
             x = Math.floor(Math.random() * w)
@@ -272,8 +280,9 @@ canvas {
             }
             eX.push(x)
             height = Math.floor(Math.random()*(maxSize - ASTEROID_MIN_SIZE + 1)) + ASTEROID_MIN_SIZE;
-            asteroids.push(new Asteroid(height, height, "asteroid.png", x, y, life));
+            newAsteroids.push(new Asteroid(height, height, "asteroid.png", x, y, life));
         }
+        asteroids = asteroids.concat(newAsteroids)
     }
 
     // function accelerate(gravity) {
