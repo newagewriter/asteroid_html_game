@@ -3,14 +3,14 @@ class GameArea {
         this.fps = 60;
         this.score = 0;
         this.keyDownCallback = function (e) {
-            renderCallback.onKeyDown(e)
-        }
+            renderCallback.onKeyDown(e);
+        };
         this.keyUpCallback = function (e) {
-            renderCallback.onKeyUp(e)
-        }
-        this.width = width
-        this.height = height
-        this.canvas = document.createElement("canvas")
+            renderCallback.onKeyUp(e);
+        };
+        this.width = width;
+        this.height = height;
+        this.canvas = document.createElement("canvas");
         this.canvas.width = width;
         this.canvas.height = height;
         this.frameNo = 0;
@@ -18,13 +18,15 @@ class GameArea {
     }
 
     start(player, map, renderCallback) {
-        this.map = map
-        player.attachTo(this)
-        this.listener = renderCallback
+        console.clear();
+        console.log("game start");
+        this.map = map;
+        player.attachTo(this);
+        this.listener = renderCallback;
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
-        this.interval = setInterval(this.onGameUpdate, 1000/this.fps, this);
-        window.addEventListener("keydown", this.keyDownCallback)
-        window.addEventListener("keyup", this.keyUpCallback)
+        this.interval = setInterval(this.onGameUpdate, Math.floor(1000 /  this.fps), this);
+        window.addEventListener("keydown", this.keyDownCallback);
+        window.addEventListener("keyup", this.keyUpCallback);
         // window.addEventListener("mousemove", function (e) {
         //     myGameArea.x = e.pageX;
         //     myGameArea.y = e.pageY;
@@ -40,12 +42,13 @@ class GameArea {
     }
 
     clear() {
+        console.log("clear canvas" + this.frameNo);
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
     stop() {
-        window.removeEventListener("keydown", this.keyDownCallback)
-        window.removeEventListener("keyup", this.keyUpCallback)
+        window.removeEventListener("keydown", this.keyDownCallback);
+        window.removeEventListener("keyup", this.keyUpCallback);
         clearInterval(this.interval);
         this.listener = null;
         document.body.removeChild(this.canvas);
@@ -53,24 +56,26 @@ class GameArea {
 
     setBackground(src, duplicated) {
         if (duplicated) {
-            this.background = new CBackground(this.canvas.width, this.canvas.height, src, 0, 0)
+            this.background = new CBackground(this.canvas.width, this.canvas.height, src, 0, 0);
         } else {
-            this.background = new CImage(this.canvas.width, this.canvas.height, src, 0, 0)
+            this.background = new CImage(this.canvas.width, this.canvas.height, src, 0, 0);
         }
     }
 
     onGameUpdate(game) {
+        console.clear();
+        console.log("frame:" + game.frameNo);
         game.clear();
         if (game.background != null) {
             game.background.speedX = -1;
             game.background.newPos();
-            game.background.update(game.canvas)
+            game.background.update(game.canvas);
         }
         if (game.map != null) {
-            game.map.onNextFrame(game)
+            game.map.onNextFrame(game);
         }
         if (game.listener != null) {
-            game.listener.onUpdate()
+            game.listener.onUpdate();
         }
         game.frameNo++;
     }

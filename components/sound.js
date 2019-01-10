@@ -19,4 +19,8 @@ class Sound {
         this.sound.pause();
         this.sound.currentTime = 0;
     }
+
+    clean() {
+        document.body.removeChild(this.sound);
+    }
 }

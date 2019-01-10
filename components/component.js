@@ -64,7 +64,7 @@ class CImage extends Component {
 
 class CBackground extends CImage {
     constructor(width, height, background, x, y) {
-        super(width, height, background, x, y)
+        super(width, height, background, x, y);
     }
     update(canvas) {
         if (this.lockUpdate) {
@@ -76,7 +76,7 @@ class CBackground extends CImage {
     }
 
     newPos() {
-        super.newPos()
+        super.newPos();
         if (this.x == -(this.width)) {
             this.x = 0;
         }
@@ -103,13 +103,13 @@ class CText extends Component {
 
 class Player extends CImage {
 
-    constructor(width, height, background, x, y) {
-        super(width, height, background, x, y)
+    constructor(width, height, background) {
+        super(width, height, background, 0, 0);
         this.rockets = [];
         this.shootSeries = 5;
-        this.shootSound = new Sound("assets/sounds/shoot.mp3")
         this.rocketFactory = new RocketFactory("Rocket");
-        this.bonus = null;
+        this.shootBonus = null;
+        this.shieldBonus = null;
         // this.gravity = 0.05;
         // this.gravitySpeed = 0;
         // this.bounce = 0.5;
@@ -124,7 +124,18 @@ class Player extends CImage {
     }
 
     attachTo(game) {
-        this.game = game
+        this.game = game;
+        this.x = (game.width - this.width) / 2;
+        this.y = game.height - 20;
+        // this.shootSound = new Sound("assets/sounds/shoot.mp3");
+    }
+
+    detached(game) {
+        this.game = null;
+        // this.shootSound.stop();
+        // this.shootSound.clean();
+        this.rockets = [];
+        this.bonus = null;
     }
 
     hitBottom() {
@@ -147,14 +158,14 @@ class Player extends CImage {
     }
     shoot() {
         if (this.shootSeries % 5 == 0) {
-            if (this.bonus != null && this.bonus.type == "rocket") {
+            if (this.shootBonus != null) {
                 var f = new RocketFactory("BigRocket");
-                this.rockets.push(f.create(this.x + (this.width/2), this.y))
+                this.rockets.push(f.create(this.x + (this.width/2), this.y));
             } else {
-                this.rockets.push(this.rocketFactory.create(this.x + (this.width/2), this.y))
+                this.rockets.push(this.rocketFactory.create(this.x + (this.width/2), this.y));
             }
-            this.shootSound.stop()
-            this.shootSound.play()
+            // this.shootSound.stop();
+            // this.shootSound.play();
         }
         this.shootSeries++;
     }
@@ -164,22 +175,35 @@ class Player extends CImage {
     }
 
     setBonus(bonus) {
-        this.bonus = bonus
+        if (bonus.type == "rocket") {
+            this.shootBonus = bonus;
+        } else {
+            this.shieldBonus = bonus;
+        }
     }
 
     update(canvas) {
-        super.update(canvas)
-        if (this.bonus != null) {
-            this.bonus.time -= 1000 / this.game.fps
-            if (this.bonus.time <= 0) {
-                this.bonus = null;
+        super.update(canvas);
+        if (this.shieldBonus != null) {
+            this.shieldBonus.time -= 1000 / this.game.fps;
+            if (this.shieldBonus.time <= 0) {
+                this.shieldBonus = null;
+            } else if (!this.shieldBonus.lockUpdate) {
+                var ctx = canvas.getContext("2d");
+                ctx.drawImage(this.shieldBonus.source, this.x - 2, this.y - 2, this.width + 4, this.height + 4);
+            }
+        }
+        if (this.shootBonus != null) {
+            this.shootBonus.time -= 1000 / this.game.fps;
+            if (this.shootBonus.time <= 0) {
+                this.shootBonus = null;
             }
         }
         
         this.rockets.forEach(function(val, index, array) {
             val.y -= 5;
-            val.update(canvas)
-        })
+            val.update(canvas);
+        });
     }
 }
 
@@ -194,39 +218,39 @@ class Asteroid extends CImage {
         var othertop = otherobj.y;
         var otherbottom = otherobj.y + (otherobj.height);
         if (hitWithPoint(otherleft, othertop)) {
-            return true
+            return true;
         }
         if (hitWithPoint(otherright, othertop)) {
-            return true
+            return true;
         }
         if (hitWithPoint(otherleft, otherbottom)) {
-            return true
+            return true;
         }
         if (hitWithPoint(otherright, otherbottom)) {
-            return true
+            return true;
         }
-        return false
+        return false;
     }
 
     hitWithPoint(x, y) {
-        var xCenter = this.x + (this.x + this.width) / 2
-        var yCenter = this.y + (this.y + this.height) / 2
-        var a = Math.abs(x - xCenter)
-        var b = Math.abs(y - yCenter)
-        var r = xCenter - this.x
+        var xCenter = this.x + (this.x + this.width) / 2;
+        var yCenter = this.y + (this.y + this.height) / 2;
+        var a = Math.abs(x - xCenter);
+        var b = Math.abs(y - yCenter);
+        var r = xCenter - this.x;
         if (r <=  + Math.sqrt(a*a + b*b)) {
-            return true
+            return true;
         }
     }
 }
 
 class RocketFactory {
     constructor(rocketType) {
-        this.rocketType = rocketType
+        this.rocketType = rocketType;
     }
 
     create(x, y) {
-        return eval("new " + this.rocketType + "(" + x + ", " + y + ")")
+        return eval("new " + this.rocketType + "(" + x + ", " + y + ")");
     }
 
     setRocketType(type) {
@@ -236,12 +260,12 @@ class RocketFactory {
 
 class Rocket extends CImage {
     constructor(x, y) {
-        super(13, 19, "assets/rocket_missile.png", x, y)
+        super(13, 19, "assets/rocket_missile.png", x, y);
         this.hit = 10;
     }
 
     update(canvas) {
-        super.update(canvas)
+        super.update(canvas);
     }
 }
 
@@ -252,14 +276,33 @@ class BigRocket extends CImage {
     }
 
     update(canvas) {
-        super.update(canvas)
+        super.update(canvas);
     }
 }
 
 class Bonus extends Component {
+    constructor(x, y, type, color, time) {
+        super(18, 18, color, x, y);
+        this.time = time;
+        this.type = type;
+    }
+}
+
+class RocketBonus extends Bonus {
     constructor(x, y) {
-        super(20, 20, "red", x, y)
-        this.time = 10000
-        this.type = "rocket"
+        super(x, y, "rocket", "red", 10000);
+    }
+}
+
+class ShieldBonus extends Bonus {
+    constructor(x, y) {
+        super(x, y, "shield", "blue", 10000);
+        this.image = new Image();
+        this.image.src = "assets/shield.png";
+        this.lockUpdate = true;
+
+        this.image.onload = function() {
+            self.lockUpdate = false;     
+        }
     }
 }

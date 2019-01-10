@@ -49,9 +49,9 @@ canvas {
     const SCORE_BY_FRAME = 1
     const DEFEATE_ASTEROID_POINTS = 20
 
-    var userScores = []
+    var userScores = [];
     var player;
-    var userName = "Unknown"
+    var userName = "Unknown";
     var asteroids = [];
     var bonuses = [];
     this.keys = [];
@@ -87,6 +87,9 @@ canvas {
     }
     var renderCallback = {
         onUpdate : function() {
+            console.log("asteriod size:" + asteroids.length)
+            console.log("rockets size:" + player.rockets.length)
+            console.log("bonuses size:" + bonuses.length)
             var x, y;
             var asteroidToRemove = []
             var bonusToRemove = []
@@ -168,6 +171,7 @@ canvas {
         document.getElementById("startScreen").style.display = "none"
         asteroids = [];
         this.keys = [];
+        bonuses = [];
         var screen = document.getElementById("endScreen")
         screen.style.display = "none";
         myGameArea = new GameArea(GAME_WIDTH, GAME_HEIGHT)
