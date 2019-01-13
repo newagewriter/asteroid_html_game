@@ -46,12 +46,11 @@ class CImage extends Component {
         this.lockUpdate = false;
         var self = this;
         this.lockUpdate = true;
-        this.image = new Image();
-        this.image.src = imageSource;
-
-        this.image.onload = function() {
+        var loadCallback = function() {
             self.lockUpdate = false;     
         }
+        this.image = GameManager.imageLoader.getImage(imageSource, loadCallback);
+        
     }
     update(canvas) {
         if (this.lockUpdate) {
@@ -63,8 +62,18 @@ class CImage extends Component {
 }
 
 class CBackground extends CImage {
-    constructor(width, height, background, x, y) {
+    /**
+     * 
+     * @param {number} width 
+     * @param {number} height 
+     * @param {String} background 
+     * @param {number} x 
+     * @param {number} y 
+     * @param {String} orientation 
+     */
+    constructor(width, height, background, x, y, orientation) {
         super(width, height, background, x, y);
+        this.orientation = orientation || "vertical";
     }
     update(canvas) {
         if (this.lockUpdate) {
@@ -72,12 +81,19 @@ class CBackground extends CImage {
         }
         var ctx = canvas.getContext("2d");
         ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
-        ctx.drawImage(this.image, this.x + this.width, this.y, this.width, this.height);
+        if (this.orientation == "vertical") {
+            ctx.drawImage(this.image, this.x, this.y - this.height, this.width, this.height);
+        } else {
+            ctx.drawImage(this.image, this.x + this.width, this.y, this.width, this.height);
+        }
     }
 
     newPos() {
         super.newPos();
-        if (this.x == -(this.width)) {
+        if (this.y >= this.height) {
+            this.y = 0;
+        }
+        if (this.x <= -this.width) {
             this.x = 0;
         }
     }
@@ -110,13 +126,9 @@ class Player extends CImage {
         this.rocketFactory = new RocketFactory("Rocket");
         this.shootBonus = null;
         this.shieldBonus = null;
-        // this.gravity = 0.05;
-        // this.gravitySpeed = 0;
-        // this.bounce = 0.5;
     }
 
     newPos() {
-        // this.gravitySpeed += this.gravity;
         this.x += this.speedX;
         this.y += this.speedY; 
         this.hitBottom();
@@ -127,13 +139,13 @@ class Player extends CImage {
         this.game = game;
         this.x = (game.width - this.width) / 2;
         this.y = game.height - 20;
-        // this.shootSound = new Sound("assets/sounds/shoot.mp3");
+        this.shootSound = new Sound("assets/sounds/shoot.mp3");
     }
 
     detached(game) {
         this.game = null;
-        // this.shootSound.stop();
-        // this.shootSound.clean();
+        this.shootSound.stop();
+        this.shootSound.clean();
         this.rockets = [];
         this.bonus = null;
     }
@@ -164,8 +176,8 @@ class Player extends CImage {
             } else {
                 this.rockets.push(this.rocketFactory.create(this.x + (this.width/2), this.y));
             }
-            // this.shootSound.stop();
-            // this.shootSound.play();
+            this.shootSound.stop();
+            this.shootSound.play();
         }
         this.shootSeries++;
     }
@@ -188,9 +200,9 @@ class Player extends CImage {
             this.shieldBonus.time -= 1000 / this.game.fps;
             if (this.shieldBonus.time <= 0) {
                 this.shieldBonus = null;
-            } else if (!this.shieldBonus.lockUpdate) {
+            } else {
                 var ctx = canvas.getContext("2d");
-                ctx.drawImage(this.shieldBonus.source, this.x - 2, this.y - 2, this.width + 4, this.height + 4);
+                ctx.drawImage(this.shieldBonus.image, this.x - 5, this.y - 5, this.width + 10, this.height + 10);
             }
         }
         if (this.shootBonus != null) {
@@ -297,12 +309,6 @@ class RocketBonus extends Bonus {
 class ShieldBonus extends Bonus {
     constructor(x, y) {
         super(x, y, "shield", "blue", 10000);
-        this.image = new Image();
-        this.image.src = "assets/shield.png";
-        this.lockUpdate = true;
-
-        this.image.onload = function() {
-            self.lockUpdate = false;     
-        }
+        this.image = GameManager.imageLoader.getImage("assets/shield.png");
     }
 }

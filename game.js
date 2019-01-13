@@ -11,6 +11,7 @@ const GAME_WIDTH = 700;
 const GAME_HEIGHT = 920;
 const SCORE_BY_FRAME = 1;
 const DEFEATE_ASTEROID_POINTS = 20;
+const MAP_CHANGE_SCORE = 1000;
 
 var userScores = [];
 var player;
@@ -20,93 +21,13 @@ var bonuses = [];
 var keys = [];
 var myScore;
 var mySound = null;
-
-var map = {
-    onNextFrame : function(game) {
-        console.log("level 1");
-        var createTime = 80;
-        var count = 2;
-        var asteroidLife = 100;
-        console.log("check that is the time to create asteroid");
-        if (game.frameNo == 1 || everyInterval(game.frameNo, createTime)) {
-            createAsteroidsIn(game.canvas.width, ASTEROID_MAX_SIZE, count, asteroidLife);
-        }
-    }
-};
-var map2 = {
-    delay: 120,
-    onNextFrame : function(game) {
-        console.log("delay...." + this.delay);
-        if (this.delay > 0) {
-            this.delay--;
-            return;
-        }
-        console.log("level 2");
-        var createTime = 80;
-        var count = 2;
-        var asteroidLife = 150;
-        if (game.frameNo == 1 || everyInterval(game.frameNo, createTime)) {
-            createAsteroidsIn(game.canvas.width, ASTEROID_MAX_SIZE, count, asteroidLife);
-        }
-    }
-};
+var mapIndex = 0;
 
 var renderCallback = {
     onUpdate : function() {
-        console.log("asteriod size:" + asteroids.length);
-        console.log("rockets size:" + player.rockets.length);
-        console.log("bonuses size:" + bonuses.length);
-        bonuses = bonuses.filter(item => {
-            var result = true;
-            item.y += 1;
-            item.update(myGameArea.canvas);
-            if (player.hitTest(item)) {
-                player.setBonus(item);
-                result = false;
-            }
-            return result;
-        });
-        var playerDestroyed = false;
-        asteroids = asteroids.filter(asteroid => {
-            if (asteroid.y > myGameArea.height) {
-                return false;
-            }
-            if (player.hitTest(asteroid)) {
-                if (player.shieldBonus != null) {
-                    asteroid.life = 0;
-                } else {
-                    playerDestroyed = true;
-                    return false;
-                }
-            } 
-            player.rockets = player.rockets.filter(val => {
-                var result = true;
-                if (val.hitTest(asteroid)) {
-                    asteroid.life -= val.hit;
-                    result = false;
-                }
-                return result && val.y > 0;
-            });
-
-            if (asteroid.life <= 0) {
-                mySound.setSource("assets/sounds/defeate.mp3");
-                mySound.play();
-                myGameArea.score += DEFEATE_ASTEROID_POINTS;
-                var rand = Math.floor(Math.random() * 10);
-                if (rand == 1) {
-                    bonuses.push(new RocketBonus(asteroid.x, asteroid.y));
-                } else if (rand == 2) {
-                    bonuses.push(new ShieldBonus(asteroid.x, asteroid.y));
-                }
-                return false;
-            } else {
-                asteroid.y += ASTERIOD_SPEED;
-                asteroid.update(myGameArea.canvas);
-                return true;
-            }
-        });
-
-        if (playerDestroyed) {
+        checkIfPlayerGrabBunus()
+        
+        if (checkIfPlayerDestroy()) {
             mySound.setSource("bounce.mp3");
             mySound.play();
             gameOver();
@@ -118,8 +39,11 @@ var renderCallback = {
         myScore.text = "SCORE: " + myGameArea.score;
         myScore.update(myGameArea.canvas);
         player.update(myGameArea.canvas);
-        if (myGameArea.map == map && myGameArea.score > 1000) {
-            myGameArea.setLevel(map2);
+        
+        if (myGameArea.score > MAP_CHANGE_SCORE * (mapIndex + 1) && myGameArea.hasNextMap()) {
+            console.log("change level");
+            mapIndex++;
+            myGameArea.nextLevel();
             asteroids = [];
         }
     },
@@ -129,7 +53,6 @@ var renderCallback = {
     },
     onKeyUp : function(event) {
         keys[event.keyCode] = false;
-            //accelerate(0.05);
     }
 };
 
@@ -143,11 +66,12 @@ function startGame() {
     screen.style.display = "none";
     myGameArea = new GameArea(GAME_WIDTH, GAME_HEIGHT);
     player = new Player(PLAYER_WIDTH, PLAYER_HEIGHT, PLAYER_IMG_SOURCE, (myGameArea.width - PLAYER_WIDTH) / 2, myGameArea.height - 20);
-    myScore = new CText("30px", "Consolas", "black", 40, 40, "text");
+    myScore = new CText("30px", "Consolas", "white", 40, 40, "text");
     if (mySound == null)
         mySound = new Sound("bounce.mp3");
-    myGameArea.setBackground("background.jpg", true);
-    myGameArea.start(player, map, renderCallback);
+    mapIndex = 0;
+    myGameArea.setBackground("assets/space.jpg");
+    myGameArea.start(player, maps, renderCallback);
 }
 
 function gameOver() {
@@ -185,18 +109,10 @@ function gameOver() {
 }
 
     function movePlayerIfNeeded(player) {
-        // if (myGameArea.x && myGameArea.y) {
-            //     player.x = myGameArea.x;
-            //     player.y = myGameArea.y;
-            // }
             player.speedX = 0;
             player.speedY = 0;
             moveByKeys(keys)
             player.newPos();
-            // if (myGameArea.x && myGameArea.y) {
-            //     player.x = myGameArea.x;
-            //     player.y = myGameArea.y;
-            // }
     }
 
     function moveByKeys() {
@@ -214,8 +130,6 @@ function gameOver() {
             move("down"); ++b; 
         }
         if (keys && keys[32]) {
-            //accelerate(-0.2)
-            
             player.shoot();
         }
         if (b == 0) {
@@ -244,13 +158,67 @@ function gameOver() {
             y = 0;
             x = Math.floor(Math.random() * w);
             height = Math.floor(Math.random()*(maxSize - ASTEROID_MIN_SIZE + 1)) + ASTEROID_MIN_SIZE;
-            asteroids.push(new Asteroid(height, height, "asteroid.png", x, y, life));
+            asteroids.push(new Asteroid(height, height, "assets/asteroid.png", x, y, life));
         }
     }
 
-    // function accelerate(gravity) {
-    //     player.gravity = gravity
-    // }
 function everyInterval(frameNo, targetFrame) {
     return (frameNo / targetFrame) % 1 == 0; 
+}
+
+function checkIfPlayerGrabBunus() {
+    bonuses = bonuses.filter(item => {
+        var result = true;
+        item.y += 1;
+        item.update(myGameArea.canvas);
+        if (player.hitTest(item)) {
+            player.setBonus(item);
+            result = false;
+        }
+        return result;
+    });
+}
+
+function checkIfPlayerDestroy() {
+    var playerDestroyed = false;
+    asteroids = asteroids.filter(asteroid => {
+        if (asteroid.y > myGameArea.height) {
+            return false;
+        }
+        if (player.hitTest(asteroid)) {
+            if (player.shieldBonus != null) {
+                asteroid.life = 0;
+            } else {
+                playerDestroyed = true;
+                return false;
+            }
+        } 
+        player.rockets = player.rockets.filter(val => {
+            var result = true;
+            if (val.hitTest(asteroid)) {
+                asteroid.life -= val.hit;
+                result = false;
+            }
+            return result && val.y > 0;
+        });
+
+        if (asteroid.life <= 0) {
+            mySound.setSource("assets/sounds/defeate.mp3");
+            mySound.play();
+            myGameArea.score += DEFEATE_ASTEROID_POINTS;
+            var rand = Math.floor(Math.random() * 10);
+            if (rand == 1) {
+                bonuses.push(new RocketBonus(asteroid.x, asteroid.y));
+            } else if (rand == 2) {
+                bonuses.push(new ShieldBonus(asteroid.x, asteroid.y));
+            }
+            return false;
+        } else {
+            asteroid.y += ASTERIOD_SPEED;
+            asteroid.update(myGameArea.canvas);
+            return true;
+        }
+    });
+
+    return playerDestroyed;
 }
