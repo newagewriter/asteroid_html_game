@@ -1,4 +1,6 @@
-class GameArea {
+const SCORE_BY_FRAME = 1;
+
+class GameArea { 
     constructor(width, height) {
         this.fps = 60;
         this.score = 0;
@@ -8,7 +10,10 @@ class GameArea {
         this.keyUpCallback = function (e) {
             renderCallback.onKeyUp(e);
         };
-        this.maps = null;
+        /**
+         * @type GameMap[]
+         */
+        this.maps = [];
         this.width = width;
         this.height = height;
         this.canvas = document.createElement("canvas");
@@ -18,6 +23,8 @@ class GameArea {
         this.context = this.canvas.getContext("2d");
         this.infoText = null;
         this.orientation = "vertical";
+        this.scoreView = new CText("30px", "Consolas", "white", 40, 40, "text");
+        this.sound  = new Sound("bounce.mp3");
     }
 
     start(player, maps, renderCallback) {
@@ -30,6 +37,10 @@ class GameArea {
         this.interval = setInterval(this.onGameUpdate, Math.floor(1000 /  this.fps), this);
         window.addEventListener("keydown", this.keyDownCallback);
         window.addEventListener("keyup", this.keyUpCallback);
+    }
+
+    currentMap() {
+        return this.maps[this.currentIndex];
     }
 
     hasNextMap() {
@@ -59,6 +70,8 @@ class GameArea {
         clearInterval(this.interval);
         this.listener = null;
         document.body.removeChild(this.canvas);
+        this.sound.stop();
+        this.sound.clean();
     }
 
     setBackground(src, wide, orientation) {
@@ -101,11 +114,19 @@ class GameArea {
             ctx.fillStyle = "white";
             ctx.fillText(game.infoText, centerX, centerY);
         }
+        game.score += SCORE_BY_FRAME;
+        game.scoreView.text = "SCORE: " + game.score;
+        game.scoreView.update(game.canvas);
         game.frameNo++;
         game.infoText = null;
     }
 
     showInfoText(text) {
         this.infoText = text;
+    }
+
+    playSound(sound) {
+        this.sound.setSource(sound);
+        this.sound.play();
     }
 }

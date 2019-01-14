@@ -1,110 +1,115 @@
-var maps = [
-    {
-        level: 1,
-        delay: 120,
-        onNextFrame : function(game) {
-            if (this.delay > 0) {
-                game.showInfoText("Level " + this.level);
-                this.delay--;
-                return;
-            }
-            console.log("Level " + this.level);
-            var createTime = 80;
-            var count = 2;
-            var asteroidLife = 100;
-            if (game.frameNo == 1 || everyInterval(game.frameNo, createTime)) {
-                createAsteroidsIn(game.canvas.width, ASTEROID_MAX_SIZE, count, asteroidLife);
-            }
-        },
-        clear: function() {
-            this.delay = 120;
-        }
-    },
-    {
-        level: 2,
-        delay: 120,
-        onNextFrame : function(game) {
-            if (this.delay > 0) {
-                game.showInfoText("Level " + this.level);
-                game.setBackground("assets/background2.jpg", true, "horizontal");
-                this.delay--;
-                return;
-            }
-            console.log("level 2");
-            var createTime = 80;
-            var count = 2;
-            var asteroidLife = 150;
-            if (game.frameNo == 1 || everyInterval(game.frameNo, createTime)) {
-                createAsteroidsIn(game.canvas.width, ASTEROID_MAX_SIZE, count, asteroidLife);
-            }
-        },
-        clear: function() {
-            this.delay = 120;
-        }
-    },
-    {
-        level: 3,
-        delay: 120,
-        onNextFrame : function(game) {
-            if (this.delay > 0) {
-                game.showInfoText("Level " + this.level);
-                this.delay--;
-                return;
-            }
-            console.log("level 2");
-            var createTime = 70;
-            var count = 3;
-            var asteroidLife = 150;
-            if (game.frameNo == 1 || everyInterval(game.frameNo, createTime)) {
-                createAsteroidsIn(game.canvas.width, ASTEROID_MAX_SIZE, count, asteroidLife);
-            }
-        },
-        clear: function() {
-            this.delay = 120;
-        }
-    },
-    {
-        level: 4,
-        delay: 120,
-        onNextFrame : function(game) {
-            if (this.delay > 0) {
-                game.showInfoText("Level " + this.level);
-                this.delay--;
-                return;
-            }
-            console.log("level 2");
-            var createTime = 60;
-            var count = 4;
-            var asteroidLife = 200;
-            if (game.frameNo == 1 || everyInterval(game.frameNo, createTime)) {
-                createAsteroidsIn(game.canvas.width, ASTEROID_MAX_SIZE, count, asteroidLife);
-            }
-        },
-        clear: function() {
-            this.delay = 120;
-        }
-    },
-    {
-        level: 5,
-        delay: 120,
-        onNextFrame : function(game) {
-            if (this.delay > 0) {
-                game.showInfoText("Level " + this.level);
-                game.setBackground("assets/background3.jpg");
-                this.delay--;
-                return;
-            }
-            console.log("level 2");
-            var createTime = 50;
-            var count = 5;
-            var asteroidLife = 250;
-            if (game.frameNo == 1 || everyInterval(game.frameNo, createTime)) {
-                createAsteroidsIn(game.canvas.width, ASTEROID_MAX_SIZE, count, asteroidLife);
-            }
-        },
-        clear: function() {
-            this.delay = 120;
+const ASTERIOD_SPEED = 5;
+
+class GameMap {
+    constructor(config) {
+        this.delay = 120;
+        /**
+         * @type Asteroid[]
+         */
+        this.asteroids = [];
+        /**
+         * @type Bonus[]
+         */
+        this.bonuses = [];
+        Object.assign(this, config);
+    }
+
+    createAsteroidsIn(game, maxSize, count, life) {
+        var w = game.canvas.width - maxSize;
+        for (var i = 0; i < count; ++i) {
+            var y = 0;
+            var x = Math.floor(Math.random() * w);
+            var height = Math.floor(Math.random()*(maxSize - ASTEROID_MIN_SIZE + 1)) + ASTEROID_MIN_SIZE;
+            this.asteroids.push(new Asteroid(height, height, "assets/asteroid.png", x, y, life));
         }
     }
+    
+    clear() {
+        this.delay = 120;
+        this.asteroids = [];
+        this.bonuses = [];
+    }
+
+    /**
+     * 
+     * @param {GameArea} game 
+     */
+    onNextFrame(game) {
+        if (this.delay > 0) {
+            game.showInfoText("Level " + this.level);
+            this.delay--;
+            return;
+        }
+        console.log("Level " + this.level);
+        if (game.frameNo == 1 || everyInterval(game.frameNo, this.createTime)) {
+            this.createAsteroidsIn(game, ASTEROID_MAX_SIZE, this.count, this.asteroidLife);
+        }
+        this.asteroids = this.asteroids.filter(asteroid => {
+            debugger;
+            if (asteroid.y > game.height) {
+                return false;
+            }
+            if (asteroid.life <= 0) {
+                game.playSound("assets/sounds/defeate.mp3");
+                game.score += DEFEATE_ASTEROID_POINTS;
+                var rand = Math.floor(Math.random() * 10);
+                if (rand == 1) {
+                    this.bonuses.push(new RocketBonus(asteroid.x, asteroid.y));
+                } else if (rand == 2) {
+                    this.bonuses.push(new ShieldBonus(asteroid.x, asteroid.y));
+                }
+                return false;
+            } else {
+                asteroid.y += ASTERIOD_SPEED;
+                asteroid.update(game.canvas);
+                return true;
+            }
+        });
+    }
+}
+
+var maps = [new GameMap({
+        level: 1,
+        bonusesType: ["shield", "rocket"],
+        createTime: 80,
+        count: 2,
+        asteroidLife: 100
+    }),
+    new GameMap({
+        level: 2,
+        bonusesType: ["shield", "rocket"],
+        asteroids: [],
+        createTime: 80,
+        count: 2,
+        asteroidLife: 150
+    }),
+    new GameMap({
+        level: 3,
+        bonusesType: ["shield", "rocket"],
+        asteroids: [],
+        createTime: 70,
+        count: 3,
+        asteroidLife: 150
+    }),
+    new GameMap({
+        level: 4,
+        bonusesType: ["shield", "rocket"],
+        asteroids: [],
+        createTime: 60,
+        count: 4,
+        asteroidLife: 200
+    }),
+    new GameMap({
+        level: 5,
+        bonusesType: ["rocket"],
+        asteroids: [],
+        createTime: 50,
+        count: 5,
+        asteroidLife: 250
+    })
 ];
+
+function everyInterval(frameNo, targetFrame) {
+    return (frameNo / targetFrame) % 1 == 0; 
+}
 

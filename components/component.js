@@ -221,7 +221,7 @@ class Player extends CImage {
 
 class Asteroid extends CImage {
     constructor(width, height, image, x, y, life) {
-        super(width, height, image, x, y)
+        super(width, height, image, x, y);
         this.life = life;
     }
     hitTest(otherobj) {
@@ -289,26 +289,5 @@ class BigRocket extends CImage {
 
     update(canvas) {
         super.update(canvas);
-    }
-}
-
-class Bonus extends Component {
-    constructor(x, y, type, color, time) {
-        super(18, 18, color, x, y);
-        this.time = time;
-        this.type = type;
-    }
-}
-
-class RocketBonus extends Bonus {
-    constructor(x, y) {
-        super(x, y, "rocket", "red", 10000);
-    }
-}
-
-class ShieldBonus extends Bonus {
-    constructor(x, y) {
-        super(x, y, "shield", "blue", 10000);
-        this.image = GameManager.imageLoader.getImage("assets/shield.png");
     }
 }
