@@ -1,3 +1,6 @@
+require('./ext/extension');
+
+const { remote } = window.require('electron');
 const PLAYER_IMG_SOURCE = "assets/player.png";
 const PLAYER_SPEED = 10;
 const PLAYER_WIDTH = 35;
@@ -86,12 +89,12 @@ function gameOver() {
         score: myGameArea.score,
         userName: userName
     });
-    userScores = userScores.sort((x1, x2) => x2.score - x1.score )
+    userScores = userScores.sort((x1, x2) => x2.score - x1.score );
     var list = document.getElementById("lastScores");
     while( list.firstChild ) {
         list.removeChild( list.firstChild );
     }
-    userScores.forEach(function(value, index, array) {
+    userScores.forEach(value => {
         var newLi = document.createElement("li");
         newLi.innerHTML = value.userName + " : " + value.score;
         if (value.userName == userName && value.score == myGameArea.score) {
@@ -183,4 +186,8 @@ function checkIfPlayerDestroy(currentMap) {
     });
 
     return playerDestroyed;
+}
+
+function openDevTools() {
+    remote.app.openDevTools();
 }
