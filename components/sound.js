@@ -6,6 +6,7 @@ class Sound {
         this.sound.setAttribute("controls", "none");
         this.sound.style.display = "none";
         document.body.appendChild(this.sound);
+            this.sound.muted = muted;
     }
 
     setSource(source) {

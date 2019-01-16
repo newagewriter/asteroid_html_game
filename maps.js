@@ -1,4 +1,7 @@
 const ASTERIOD_SPEED = 5;
+const DEFEATE_ASTEROID_POINTS = 20;
+const ASTEROID_MAX_SIZE = 100;
+const ASTEROID_MIN_SIZE = 50;
 
 class GameMap {
     constructor(config) {

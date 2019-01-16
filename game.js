@@ -1,17 +1,11 @@
-require('./ext/extension');
-
 const { remote } = window.require('electron');
 const PLAYER_IMG_SOURCE = "assets/player.png";
 const PLAYER_SPEED = 10;
 const PLAYER_WIDTH = 35;
 const PLAYER_HEIGHT = 50; 
 
-const ASTERIOD_COUNT_PER_TIME = 3;
-const ASTEROID_MAX_SIZE = 100;
-const ASTEROID_MIN_SIZE = 50;
 const GAME_WIDTH = 700;
-const GAME_HEIGHT = 920;
-const DEFEATE_ASTEROID_POINTS = 20;
+const GAME_HEIGHT = 900;
 const MAP_CHANGE_SCORE = 1000;
 
 var userScores = [];
@@ -20,6 +14,7 @@ var userName = "Unknown";
 var keys = [];
 var mySound = null;
 var mapIndex = 0;
+var muted = false;
 
 /**
  * @type GameArea
@@ -190,4 +185,18 @@ function checkIfPlayerDestroy(currentMap) {
 
 function openDevTools() {
     remote.app.openDevTools();
+}
+
+function muteSound() {
+    muted = !muted;
+    var elems = document.querySelectorAll("video, audio");
+    elems.forEach(item => {
+        
+        item.muted = muted;
+    });
+    if (muted) {
+        document.getElementById("mute_sound_img").src = "assets/mute_sound.jpg";
+    } else {
+        document.getElementById("mute_sound_img").src = "assets/sound.jpg";
+    }
 }
