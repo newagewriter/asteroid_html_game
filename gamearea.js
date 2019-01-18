@@ -1,4 +1,4 @@
-const SCORE_BY_FRAME = 1;
+const SCORE_BY_FRAME = 0.1;
 
 class GameArea { 
     constructor(width, height) {
@@ -115,7 +115,7 @@ class GameArea {
             ctx.fillText(game.infoText, centerX, centerY);
         }
         game.score += SCORE_BY_FRAME;
-        game.scoreView.text = "SCORE: " + game.score;
+        game.scoreView.text = "SCORE: " + Math.floor(game.score);
         game.scoreView.update(game.canvas);
         game.frameNo++;
         game.infoText = null;

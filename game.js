@@ -1,8 +1,9 @@
-const { remote } = window.require('electron');
+const { remote } = include('electron');
+include('./extension');
 const PLAYER_IMG_SOURCE = "assets/player.png";
 const PLAYER_SPEED = 10;
 const PLAYER_WIDTH = 35;
-const PLAYER_HEIGHT = 50; 
+const PLAYER_HEIGHT = 50;
 
 const GAME_WIDTH = 700;
 const GAME_HEIGHT = 900;
@@ -79,9 +80,9 @@ function gameOver() {
         
     var screen = document.getElementById("endScreen");
     screen.style.display = "block";
-    document.getElementById("yourScore").innerHTML = myGameArea.score;
+    document.getElementById("yourScore").innerHTML = Math.floor(myGameArea.score);
     userScores.push({
-        score: myGameArea.score,
+        score: Math.floor(myGameArea.score),
         userName: userName
     });
     userScores = userScores.sort((x1, x2) => x2.score - x1.score );
@@ -172,6 +173,8 @@ function checkIfPlayerDestroy(currentMap) {
         player.rockets = player.rockets.filter(val => {
             var result = true;
             if (val.hitTest(asteroid)) {
+                console.log(val.constructor.name);
+                console.log(val.hit);
                 asteroid.life -= val.hit;
                 result = false;
             }

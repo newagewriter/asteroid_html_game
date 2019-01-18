@@ -23,7 +23,8 @@ class GameMap {
             var y = 0;
             var x = Math.floor(Math.random() * w);
             var height = Math.floor(Math.random()*(maxSize - ASTEROID_MIN_SIZE + 1)) + ASTEROID_MIN_SIZE;
-            this.asteroids.push(new Asteroid(height, height, "assets/asteroid.png", x, y, life));
+            var factor = height / maxSize;
+            this.asteroids.push(new Asteroid(Math.floor(height * 1.3), height, "assets/asteroid.png", x, y, life + life * factor));
         }
     }
     
@@ -48,7 +49,6 @@ class GameMap {
             this.createAsteroidsIn(game, ASTEROID_MAX_SIZE, this.count, this.asteroidLife);
         }
         this.asteroids = this.asteroids.filter(asteroid => {
-            debugger;
             if (asteroid.y > game.height) {
                 return false;
             }
@@ -57,7 +57,7 @@ class GameMap {
                 game.score += DEFEATE_ASTEROID_POINTS;
                 var rand = Math.floor(Math.random() * 10);
                 if (rand == 1) {
-                    this.bonuses.push(new RocketBonus(asteroid.x, asteroid.y));
+                    this.bonuses.push(new RocketBonus(asteroid.x, asteroid.y, randomRocket()));
                 } else if (rand == 2) {
                     this.bonuses.push(new ShieldBonus(asteroid.x, asteroid.y));
                 }
@@ -114,5 +114,18 @@ var maps = [new GameMap({
 
 function everyInterval(frameNo, targetFrame) {
     return (frameNo / targetFrame) % 1 == 0; 
+}
+
+function randomRocket() {
+    var rand = Math.floor(Math.random() * 3);
+    switch (rand) {
+        case 0:
+            return new RocketFactory("BigRocket");
+        case 1:
+            return new RocketFactory("LaserWave");
+
+        default:
+            return new RocketFactory("BaseRocket");
+    }
 }
 
