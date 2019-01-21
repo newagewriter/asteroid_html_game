@@ -1,7 +1,9 @@
 const { remote } = include('electron');
 include('./extension');
 const PLAYER_IMG_SOURCE = "assets/player.png";
-const PLAYER_SPEED = 10;
+const PLAYER_IMG_SOURCE_LEFT = "assets/player_left.png";
+const PLAYER_IMG_SOURCE_RIGHT = "assets/player_right.png";
+const PLAYER_SPEED = 8;
 const PLAYER_WIDTH = 35;
 const PLAYER_HEIGHT = 50;
 
@@ -133,8 +135,14 @@ function move(dir) {
     player.image.src = PLAYER_IMG_SOURCE;
     if (dir == "up") {player.speedY = -PLAYER_SPEED; }
     if (dir == "down") {player.speedY = PLAYER_SPEED; }
-    if (dir == "left") {player.speedX = -PLAYER_SPEED; }
-    if (dir == "right") {player.speedX = PLAYER_SPEED; }
+    if (dir == "left") {
+        player.image.src = PLAYER_IMG_SOURCE_LEFT;
+        player.speedX = -PLAYER_SPEED; 
+    }
+    if (dir == "right") {
+        player.image.src = PLAYER_IMG_SOURCE_RIGHT;
+        player.speedX = PLAYER_SPEED; 
+    }
 }
 
 function clearmove() {
@@ -173,9 +181,26 @@ function checkIfPlayerDestroy(currentMap) {
         player.rockets = player.rockets.filter(val => {
             var result = true;
             if (val.hitTest(asteroid)) {
-                console.log(val.constructor.name);
-                console.log(val.hit);
                 asteroid.life -= val.hit;
+                result = false;
+            }
+            return result && val.y > 0;
+        });
+        return true;
+    });
+    currentMap.enemies.forEach(enemy => {
+        enemy.rockets = enemy.rockets.filter(val => {
+            var result = true;
+            if (val.hitTest(player)) {
+                playerDestroyed = true;
+                return false;
+            }
+            return result && val.y > 0;
+        });
+        player.rockets = player.rockets.filter(val => {
+            var result = true;
+            if (val.hitTest(enemy)) {
+                enemy.life -= val.hit;
                 result = false;
             }
             return result && val.y > 0;

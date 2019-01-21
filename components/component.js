@@ -121,8 +121,8 @@ class CText extends Component {
 
 class Player extends CImage {
 
-    constructor(width, height, background) {
-        super(width, height, background, 0, 0);
+    constructor(width, height, image) {
+        super(width, height, image, 0, 0);
         this.rockets = [];
         this.shootSeries = 5;
         this.rocketFactory = new RocketFactory("BaseRocket");
@@ -132,6 +132,12 @@ class Player extends CImage {
 
     newPos() {
         this.x += this.speedX;
+        if (this.x < 0) {
+            this.x = 0;
+        }
+        if (this.game && this.x > (this.game.width - this.width)) {
+            this.x = this.game.width - this.width;
+        }
         this.y += this.speedY; 
         this.hitBottom();
         this.hitTop();

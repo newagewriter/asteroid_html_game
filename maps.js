@@ -1,10 +1,12 @@
-const ASTERIOD_SPEED = 5;
+const ASTERIOD_SPEED = 4;
 const DEFEATE_ASTEROID_POINTS = 20;
+const DEFEATE_ENEMY_POINTS = 100;
 const ASTEROID_MAX_SIZE = 100;
 const ASTEROID_MIN_SIZE = 50;
 
 class GameMap {
     constructor(config) {
+        this.type = "asteroid";
         this.delay = 120;
         /**
          * @type Asteroid[]
@@ -44,34 +46,89 @@ class GameMap {
             this.delay--;
             return;
         }
-        console.log("Level " + this.level);
-        if (game.frameNo == 1 || everyInterval(game.frameNo, this.createTime)) {
-            this.createAsteroidsIn(game, ASTEROID_MAX_SIZE, this.count, this.asteroidLife);
-        }
-        this.asteroids = this.asteroids.filter(asteroid => {
-            if (asteroid.y > game.height) {
-                return false;
-            }
-            if (asteroid.life <= 0) {
-                game.playSound("assets/sounds/defeate.mp3");
-                game.score += DEFEATE_ASTEROID_POINTS;
-                var rand = Math.floor(Math.random() * 10);
-                if (rand == 1) {
-                    this.bonuses.push(new RocketBonus(asteroid.x, asteroid.y, randomRocket()));
-                } else if (rand == 2) {
-                    this.bonuses.push(new ShieldBonus(asteroid.x, asteroid.y));
+        switch (this.type) {
+            case "asteroid":
+                if (game.frameNo == 1 || everyInterval(game.frameNo, this.createTime)) {
+                    this.createAsteroidsIn(game, ASTEROID_MAX_SIZE, this.count, this.asteroidLife);
                 }
-                return false;
-            } else {
-                asteroid.y += ASTERIOD_SPEED;
-                asteroid.update(game.canvas);
-                return true;
-            }
-        });
+                this.asteroids = this.asteroids.filter(asteroid => {
+                    if (asteroid.y > game.height) {
+                        return false;
+                    }
+                    if (asteroid.life <= 0) {
+                        game.playSound("assets/sounds/defeate.mp3");
+                        game.score += DEFEATE_ASTEROID_POINTS;
+                        var rand = Math.floor(Math.random() * 10);
+                        if (rand == 1) {
+                            this.bonuses.push(new RocketBonus(asteroid.x, asteroid.y, randomRocket()));
+                        } else if (rand == 2) {
+                            this.bonuses.push(new ShieldBonus(asteroid.x, asteroid.y));
+                        }
+                        return false;
+                    } else {
+                        asteroid.y += ASTERIOD_SPEED;
+                        asteroid.update(game.canvas);
+                        return true;
+                    }
+                });
+            break;
+            case "boss":
+            var action = "";
+                if (this.enemies.length == 0) {
+                    var x = (game.width - 35) / 2;
+                    var y = 20;
+                    var enemy = new Enemy(35, 50, "assets/player.png", this.life, x, y);
+                    enemy.attachTo(game);
+                    this.enemies.push(enemy);
+                } else {
+                    if (game.frameNo == 1 || everyInterval(game.frameNo, this.ai.actionTime)) {
+                        this.enemies.forEach(item => {
+                            item.speedX = 0;
+                            item.speedY = 0;
+                            item.shootRelease();
+                        });
+                        if (this.ai.index >= this.ai.actions.length) {
+                            this.ai.index = 0;
+                        }
+                        action = this.ai.actions[this.ai.index++];
+                    }
+                }
+                this.enemies.forEach(item => {
+                    console.log("action:" + action);
+                    switch (action) {
+                        case "shoot": 
+                            item.shoot();
+                        break;
+                        case "move-left": 
+                            item.speedX = -PLAYER_SPEED; 
+                        break;
+                        case "move-right": 
+                            item.speedX = +PLAYER_SPEED; 
+                        break;
+                    }
+                    item.newPos();
+                    item.update(game.canvas);
+
+                    if (item.life <= 0) {
+                        game.playSound("assets/sounds/defeate.mp3");
+                        game.score += DEFEATE_ENEMY_POINTS;
+                        var rand = Math.floor(Math.random() * 10);
+                        if (rand == 1) {
+                            this.bonuses.push(new RocketBonus(asteroid.x, asteroid.y, randomRocket()));
+                        } else if (rand == 2) {
+                            this.bonuses.push(new ShieldBonus(asteroid.x, asteroid.y));
+                        }
+                        return false;
+                    }
+                });
+            break;
+        }
+        
     }
 }
 
-var maps = [new GameMap({
+var maps = [
+    new GameMap({
         level: 1,
         bonusesType: ["shield", "rocket"],
         createTime: 80,
@@ -109,6 +166,36 @@ var maps = [new GameMap({
         createTime: 50,
         count: 5,
         asteroidLife: 250
+    }),
+    new GameMap({
+        level: 6,
+        type: "boss",
+        bonusesType: ["rocket"],
+        enemies: [],
+        enemyLife: 250,
+        ai: {
+            actionTime: 20,
+            actions: [
+                "shoot",
+                "move-left",
+                "move-right",
+                "move-right",
+                "move-right",
+                "shoot",
+                "shoot",
+                "shoot",
+                "move-left",
+                "move-left",
+                "shoot",
+                "move-left",
+                "shoot",
+                "move-left",
+                "shoot",
+                "shoot",
+                "move-right"
+            ],
+            index: 0
+        }
     })
 ];
 

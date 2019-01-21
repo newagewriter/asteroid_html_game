@@ -14,12 +14,14 @@ class RocketBonus extends Bonus {
      */
     constructor(x, y, rocketFactory) {
         super(x, y, "rocket", "rgba(255, 0, 0, 0.2)", 30);
+        var scale = 1;
         if (rocketFactory.templateObject.width > rocketFactory.templateObject.height) {
-            this.height = this.height * this.width / rocketFactory.templateObject.width;
+            scale = this.width / rocketFactory.templateObject.width;
         } else {
-            this.width = this.width * this.heigh / rocketFactory.templateObject.height;
+            scale = this.height / rocketFactory.templateObject.height;
         }
-        console.log("size:" + this.width + "; " + this.height);
+        this.width = rocketFactory.templateObject.width * scale;
+        this.height = rocketFactory.templateObject.height * scale;
         this.rocketFactory = rocketFactory;
     }
 

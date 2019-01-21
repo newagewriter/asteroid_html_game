@@ -3,7 +3,7 @@ const { app, BrowserWindow } = require('electron');
 let win; 
 
 app.on('ready', () => {
-    win = new BrowserWindow({width: 800, height: 1000});
+    win = new BrowserWindow({width: 1400, height: 1000});
     win.loadFile('g2.html');
     win.on('closed', () => {
         // Dereference the window object, usually you would store windows

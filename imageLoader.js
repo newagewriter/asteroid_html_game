@@ -1,12 +1,15 @@
 class ImageLoader {
     constructor() {
+        /**
+         * @type Image[]
+         */
         var loadedImage = [];
         this.getImage = function (image, onLoadFinish) {
             if (loadedImage[image]) {
                 if (onLoadFinish) {
                     onLoadFinish();
                 }
-                return loadedImage[image];
+                return loadedImage[image].cloneNode(true);
             }
             else {
                 var newImage = new Image();
@@ -17,7 +20,7 @@ class ImageLoader {
                         onLoadFinish();
                     }
                 };
-                return newImage;
+                return newImage.cloneNode(true);
             }
         };
     }
