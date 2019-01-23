@@ -2,7 +2,6 @@ const SCORE_BY_FRAME = 0.1;
 
 class GameArea { 
     constructor(width, height) {
-        this.fps = 60;
         this.score = 0;
         this.keyDownCallback = function (e) {
             renderCallback.onKeyDown(e);
@@ -34,7 +33,7 @@ class GameArea {
         player.attachTo(this);
         this.listener = renderCallback;
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
-        this.interval = setInterval(this.onGameUpdate, Math.floor(1000 /  this.fps), this);
+        requestAnimationFrame(this.onGameUpdate);
         window.addEventListener("keydown", this.keyDownCallback);
         window.addEventListener("keyup", this.keyUpCallback);
     }
@@ -88,37 +87,37 @@ class GameArea {
         this.background = new CBackground(width, height, src, 0, 0, orientation);
     }
 
-    onGameUpdate(game) {
-        game.clear();
-        if (game.background != null) {
-            if (game.orientation == "vertical") {
-                game.background.speedY = 1;
-                game.background.speedX = 0;
+    onGameUpdate() {
+        this.clear();
+        if (this.background != null) {
+            if (this.orientation == "vertical") {
+                this.background.speedY = 1;
+                this.background.speedX = 0;
             } else {
-                game.background.speedX = -1;
-                game.background.speedY = 0;
+                this.background.speedX = -1;
+                this.background.speedY = 0;
             }
             
-            game.background.newPos();
-            game.background.update(game.canvas);
+            this.background.newPos();
+            this.background.update(this.canvas);
         }
-        game.updateCurrentMap();
-        if (game.listener != null) {
-            game.listener.onUpdate();
+        this.updateCurrentMap();
+        if (this.listener != null) {
+            this.listener.onUpdate();
         }
-        if (game.infoText) {
-            var ctx = game.canvas.getContext("2d");
-            var centerX = (game.width - ctx.measureText(game.infoText).width ) / 2;
-            var centerY = game.height / 2;
+        if (this.infoText) {
+            var ctx = this.canvas.getContext("2d");
+            var centerX = (this.width - ctx.measureText(this.infoText).width ) / 2;
+            var centerY = this.height / 2;
             ctx.font = "30px Consolas";
             ctx.fillStyle = "white";
-            ctx.fillText(game.infoText, centerX, centerY);
+            ctx.fillText(this.infoText, centerX, centerY);
         }
-        game.score += SCORE_BY_FRAME;
-        game.scoreView.text = "SCORE: " + Math.floor(game.score);
-        game.scoreView.update(game.canvas);
-        game.frameNo++;
-        game.infoText = null;
+        this.score += SCORE_BY_FRAME;
+        this.scoreView.text = "SCORE: " + Math.floor(this.score);
+        this.scoreView.update(this.canvas);
+        this.frameNo++;
+        this.infoText = null;
     }
 
     showInfoText(text) {

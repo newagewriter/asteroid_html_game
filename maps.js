@@ -1,4 +1,4 @@
-const ASTERIOD_SPEED = 4;
+const ASTERIOD_SPEED = 3;
 const DEFEATE_ASTEROID_POINTS = 20;
 const DEFEATE_ENEMY_POINTS = 100;
 const ASTEROID_MAX_SIZE = 100;
@@ -12,6 +12,10 @@ class GameMap {
          * @type Asteroid[]
          */
         this.asteroids = [];
+        /**
+         * @type Enemy[]
+         */
+        this.enemies = [];
         /**
          * @type Bonus[]
          */
@@ -138,7 +142,6 @@ var maps = [
     new GameMap({
         level: 2,
         bonusesType: ["shield", "rocket"],
-        asteroids: [],
         createTime: 80,
         count: 2,
         asteroidLife: 150
@@ -146,7 +149,6 @@ var maps = [
     new GameMap({
         level: 3,
         bonusesType: ["shield", "rocket"],
-        asteroids: [],
         createTime: 70,
         count: 3,
         asteroidLife: 150
@@ -154,7 +156,6 @@ var maps = [
     new GameMap({
         level: 4,
         bonusesType: ["shield", "rocket"],
-        asteroids: [],
         createTime: 60,
         count: 4,
         asteroidLife: 200
@@ -162,7 +163,6 @@ var maps = [
     new GameMap({
         level: 5,
         bonusesType: ["rocket"],
-        asteroids: [],
         createTime: 50,
         count: 5,
         asteroidLife: 250

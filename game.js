@@ -3,15 +3,19 @@ include('./extension');
 const PLAYER_IMG_SOURCE = "assets/player.png";
 const PLAYER_IMG_SOURCE_LEFT = "assets/player_left.png";
 const PLAYER_IMG_SOURCE_RIGHT = "assets/player_right.png";
-const PLAYER_SPEED = 8;
+const PLAYER_SPEED = 6;
 const PLAYER_WIDTH = 35;
 const PLAYER_HEIGHT = 50;
+const GAME_FPS = 60;
 
 const GAME_WIDTH = 700;
 const GAME_HEIGHT = 900;
 const MAP_CHANGE_SCORE = 1000;
 
 var userScores = [];
+/**
+ * @type Player
+ */
 var player;
 var userName = "Unknown";
 var keys = [];
@@ -66,6 +70,7 @@ function startGame() {
     mapIndex = 0;
     myGameArea.setBackground("assets/space.jpg");
     myGameArea.start(player, maps, renderCallback);
+    prepareRender();
 }
 
 function gameOver() {
@@ -79,6 +84,7 @@ function gameOver() {
     ctx.strokeText(endText, centerX, centerY);
     myGameArea.stop();
     player.detached(myGameArea);
+    cancelAnimationFrame(onRender);
         
     var screen = document.getElementById("endScreen");
     screen.style.display = "block";
@@ -227,4 +233,13 @@ function muteSound() {
     } else {
         document.getElementById("mute_sound_img").src = "assets/sound.jpg";
     }
+}
+
+function prepareRender() {
+    requestAnimationFrame(onRender);
+}
+
+function onRender(time) {
+    myGameArea.onGameUpdate();
+    requestAnimationFrame(onRender);
 }

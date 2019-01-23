@@ -43,8 +43,16 @@ class Component {
 }
 
 class CImage extends Component {
+    /**
+     * 
+     * @param {number} width 
+     * @param {number} height 
+     * @param {string} imageSource 
+     * @param {number} x
+     * @param {number} y 
+     */
     constructor(width, height, imageSource, x, y) {
-        super(width, height, imageSource, x, y);
+        super(width, height, "rgba(0, 0, 0, 0)", x, y);
         this.lockUpdate = false;
         var self = this;
         this.lockUpdate = true;
@@ -54,6 +62,10 @@ class CImage extends Component {
         this.image = GameManager.imageLoader.getImage(imageSource, loadCallback);
         
     }
+    /**
+     * 
+     * @param {HTMLCanvasElement} canvas 
+     */
     update(canvas) {
         if (this.lockUpdate) {
             return;
@@ -116,145 +128,5 @@ class CText extends Component {
         ctx.font = this.fontSize + " " + this.fontName;
         ctx.fillStyle = this.color;
         ctx.fillText(this.text, this.x, this.y);        
-    }
-}
-
-class Player extends CImage {
-
-    constructor(width, height, image) {
-        super(width, height, image, 0, 0);
-        this.rockets = [];
-        this.shootSeries = 5;
-        this.rocketFactory = new RocketFactory("BaseRocket");
-        this.shootBonus = null;
-        this.shieldBonus = null;
-    }
-
-    newPos() {
-        this.x += this.speedX;
-        if (this.x < 0) {
-            this.x = 0;
-        }
-        if (this.game && this.x > (this.game.width - this.width)) {
-            this.x = this.game.width - this.width;
-        }
-        this.y += this.speedY; 
-        this.hitBottom();
-        this.hitTop();
-    }
-
-    attachTo(game) {
-        this.game = game;
-        this.x = (game.width - this.width) / 2;
-        this.y = game.height - 20;
-        this.shootSound = new Sound("assets/sounds/shoot.mp3");
-    }
-
-    detached(game) {
-        this.game = null;
-        this.shootSound.stop();
-        this.shootSound.clean();
-        this.rockets = [];
-        this.bonus = null;
-    }
-
-    hitBottom() {
-        if (this.game) {
-            var rockbottom = this.game.canvas.height - this.height;
-            if (this.y > rockbottom) {
-                this.y = rockbottom;
-                this.gravitySpeed = -(this.gravitySpeed * this.bounce);
-            }
-        }
-    }
-    hitTop() {
-        if (this.game) {
-            var rockTop = 0;
-            if (this.y < rockTop) {
-                this.y = rockTop;
-                this.gravitySpeed = -(this.gravitySpeed * this.bounce);
-            }
-        }
-    }
-    shoot() {
-        if (this.shootSeries % this.rocketFactory.getRocketSpeed() == 0) {
-            this.rockets.push(this.rocketFactory.create(this.x + (this.width/2), this.y));
-            this.shootSound.stop();
-            this.shootSound.play();
-        }
-        this.shootSeries++;
-    }
-
-    shootRelease() {
-        this.shootSeries = this.rocketFactory.getRocketSpeed();
-    }
-
-    setBonus(bonus) {
-        if (bonus.type == "rocket") {
-            this.rocketFactory = bonus.rocketFactory;
-        } else {
-            this.shieldBonus = bonus;
-        }
-    }
-
-    update(canvas) {
-        super.update(canvas);
-        if (this.shieldBonus != null) {
-            this.shieldBonus.time -= 1000 / this.game.fps;
-            if (this.shieldBonus.time <= 0) {
-                this.shieldBonus = null;
-            } else {
-                var ctx = canvas.getContext("2d");
-                ctx.drawImage(this.shieldBonus.image, this.x - 5, this.y - 5, this.width + 10, this.height + 10);
-            }
-        }
-        if (this.shootBonus != null) {
-            this.shootBonus.time -= 1000 / this.game.fps;
-            if (this.shootBonus.time <= 0) {
-                this.shootBonus = null;
-            }
-        }
-        
-        this.rockets.forEach(function(val, index, array) {
-            val.y -= 5;
-            val.update(canvas);
-        });
-    }
-}
-
-class Asteroid extends CImage {
-    constructor(width, height, image, x, y, life) {
-        super(width, height, image, x, y);
-        this.life = life;
-    }
-    hitTest(otherobj) {
-        var otherleft = otherobj.x;
-        var otherright = otherobj.x + (otherobj.width);
-        var othertop = otherobj.y;
-        var otherbottom = otherobj.y + (otherobj.height);
-        if (hitWithPoint(otherleft, othertop)) {
-            return true;
-        }
-        if (hitWithPoint(otherright, othertop)) {
-            return true;
-        }
-        if (hitWithPoint(otherleft, otherbottom)) {
-            return true;
-        }
-        if (hitWithPoint(otherright, otherbottom)) {
-            return true;
-        }
-        return false;
-    }
-
-    hitWithPoint(x, y) {
-        var xCenter = this.x + (this.x + this.width) / 2;
-        var yCenter = this.y + (this.y + this.height) / 2;
-        var a = Math.abs(x - xCenter);
-        var b = Math.abs(y - yCenter);
-        var r = xCenter - this.x;
-        if (r <=  + Math.sqrt(a*a + b*b)) {
-            return true;
-        }
     }
 }
