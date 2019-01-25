@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <meta charset="UTF-8"> 
+        <link rel="stylesheet" type="text/css" href="style/ui.css" />
+            
+        <script type="text/javascript" src="js/imageLoader.js" ></script>
+        <script type="text/javascript" src="js/game_manager.js" ></script>
+        <script type="text/javascript" src="js/component/component.js" ></script>
+        <script type="text/javascript" src="js/component/CImage.js" ></script>
+        <script type="text/javascript" src="js/component/Player.js" ></script>
+        <script type="text/javascript" src="js/game.js" ></script>
+        <script type="text/javascript" src="js/main.js" ></script>
+    </head>
+    <body>
+        <div id="gameScreen">
+            <button id="startAgain" onclick="startGame()" >Start game</button>
+            <button id="stopGame" onclick="stopGame()" >Stop</button>
+            <input id="rotate" type="number" value="0" />
+            <button id="changeRotation" onclick="changeRotation()" >Change</button>
+        </div>
+    </body>
+</html>
