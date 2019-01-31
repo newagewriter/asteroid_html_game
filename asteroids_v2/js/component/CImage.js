@@ -27,17 +27,17 @@ class CImage extends Component {
             return;
         }
         context.save();
-        var x = this.x;
-        var y = this.y;
-        var width = this.width;
-        var height = this.height;
+        var x = this.getX();
+        var y = this.getY();
+        var width = this.width();
+        var height = this.height();
         var direction = 1;
         if ((this.rotation > 115 && this.rotation <= 225)) {
-            x = -this.x;
-            y = -this.y;
+            x = -this.getX();
+            y = -this.getY();
             direction = -1;
         }
-        context.translate(this.x + width/2, this.y + height/2);
+        context.translate(this.getX() + width/2, this.getY() + height/2);
         context.rotate(this.rotation * Math.PI/180);
         context.drawImage(this.image, -direction*width/2, -direction*height/2, direction*width, direction*height);
         context.restore();

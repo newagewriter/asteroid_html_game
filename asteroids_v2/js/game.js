@@ -1,4 +1,11 @@
 const GAME_GRAVITY = 3;
+const PLAYER_SPEED = 5;
+
+const KEY_LEFT = 37;
+const KEY_RIGHT = 39;
+const KEY_UP = 38;
+const KEY_DOWN = 40;
+const KEY_SPACE = 32;
 
 class Game {
     /**
@@ -31,6 +38,19 @@ class Game {
         this.bufferCtx = this.bufferCanvas.getContext("2d");
         this.score = 0;
         this.started = false;
+        /**
+         * @type Player
+         */
+        this.player = null;
+        this.keys = [];
+        /**
+         * @type GameMap
+         */
+        this.map = null;
+        /**
+         * @type ColisionManager
+         */
+        this.colisionManager = new ColisionManager();
     }
 
     /**
@@ -43,12 +63,18 @@ class Game {
         gameDiv.appendChild(this.canvas);
         requestAnimationFrame(renderFrame);
         this.createPlayer();
+        window.addEventListener("keydown", this.onKeyDown);
+        window.addEventListener("keyup", this.onKeyUp);
+        this.loadMap();
+
     }
 
     stop() {
         this.started = false;
         cancelAnimationFrame(renderFrame);
         this.canvas.parentElement.removeChild(this.canvas);
+        window.removeEventListener("keydown", this.onKeyDown);
+        window.removeEventListener("keyup", this.onKeyUp);
     }
 
     /**
@@ -59,7 +85,13 @@ class Game {
         this.components.push(component);
     }
 
-    update() {
+    /**
+     * 
+     * @param {number} timestamp 
+     */
+    update(timestamp) {
+        this.map.update(this, this.frameNo);
+        this.movePlayerIfNeeded();
         this.player.update();
         this.components.forEach(component => {
             //component.y += GAME_GRAVITY;
@@ -72,15 +104,18 @@ class Game {
     draw() {
         if (this.bufferCtx) {
             this.drawBackground(this.bufferCanvas.getContext("2d"));
+            this.map.draw(this.bufferCtx);
             this.player.draw(this.bufferCtx);
             this.components.forEach( component => {
-                console.log("draw component");
                 component.draw(this.bufferCtx);
             });
 
-            this.ctx.drawImage(this.bufferCanvas, 0, 0, this.canvas.width, this.canvas.height);
-
             this.drawInfoText(this.bufferCanvas);
+
+            if (this.playerLife)  {
+                this.playerLife.draw(this.bufferCtx);
+            }  
+            this.ctx.drawImage(this.bufferCanvas, 0, 0, this.canvas.width, this.canvas.height);  
         }
     }
 
@@ -119,7 +154,41 @@ class Game {
     }
 
     createPlayer() {
-        this.player = new Player(this.width / 2, this.height - 100, 50, 60);
+        this.player = new Player(this.width / 2, this.height - 100, 50, 60, 100);
+        this.playerLife = new Component(10, this.height - 40, 100, 20, "red");
+    }
+
+    loadMap() {
+        this.map = new GameMap(); 
+    }
+
+    /**
+     * 
+     * @param {Event} event 
+     */
+    onKeyDown(event) {
+        game.keys[event.keyCode] = true;
+    }
+
+    onKeyUp(event) {
+        game.keys[event.keyCode] = false;
+    }
+
+    movePlayerIfNeeded() {
+        this.player.speedX = 0;
+        this.player.speedY = 0;
+        if (this.keys[KEY_LEFT]) {
+            this.player.speedX -= PLAYER_SPEED;
+        } 
+        if (this.keys[KEY_RIGHT]) {
+            this.player.speedX += PLAYER_SPEED;
+        }
+        // if (this.keys[KEY_UP]) {
+        //     this.player.speedY -= PLAYER_SPEED;
+        // }
+        // if (this.keys[KEY_DOWN]) {
+        //     this.player.speedY += PLAYER_SPEED;
+        // }
     }
 }
 
@@ -129,7 +198,7 @@ class Game {
  */
 function renderFrame(timestamp) {
     if (game.started) {
-        game.update();
+        game.update(timestamp);
         game.draw();
     
         requestAnimationFrame(this.renderFrame);

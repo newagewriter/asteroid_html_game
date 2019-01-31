@@ -1,10 +1,18 @@
 
 class Component {
+    /**
+     * 
+     * @param {number} x 
+     * @param {number} y 
+     * @param {number} width 
+     * @param {number} height 
+     * @param {string} color 
+     */
     constructor(x, y, width, height, color) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
+        /**
+         * @type Rectangle
+         */
+        this.shape = new Rectangle(x, y, width, height);
         this.color = color;
         this.transformMatrix = [
             1, 0, 0,
@@ -14,6 +22,8 @@ class Component {
         this.rotation = 0;
         this.translateX = 0;
         this.translateY = 0;
+        this.speedX = 0;
+        this.speedY = 0;
     }
 
     /**
@@ -26,6 +36,8 @@ class Component {
     }
 
     update() {
+        this.shape.x += this.speedX;
+        this.shape.y += this.speedY;
     }
 
     /**
@@ -37,7 +49,23 @@ class Component {
         context.rotate(this.rotation);
         context.translate(this.translateX, this.translateY);
         context.fillStyle = this.color;
-        context.fillRect(this.x, this.y, this.width, this.height);
+        context.fillRect(this.getX(), this.getY(), this.width(), this.height());
         context.restore();
+    }
+
+    getX() {
+        return this.shape.x;
+    }
+
+    getY() {
+        return this.shape.y;
+    }
+
+    width() {
+        return this.shape.width;
+    }
+
+    height() {
+        return this.shape.height;
     }
 }
