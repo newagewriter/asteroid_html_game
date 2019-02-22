@@ -1,0 +1,17 @@
+.assertResult {
+    margin: 2px 20px;
+    border: 1px solid gray
+}
+
+.assertResult span {
+    margin: 2px 10px;
+}
+
+.passStyle {
+    
+    color: #11ff11;
+}
+
+.failedStyle {
+    color: red;
+}

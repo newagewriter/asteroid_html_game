@@ -18,18 +18,22 @@ class GameMap {
      * @param {number} currentFrame 
      */
     update(game, currentFrame) {
-        if (currentFrame % ASTEROID_CREATE_FRAME == 0) {
+        if (game.started && currentFrame % ASTEROID_CREATE_FRAME == 0) {
             this.createAsteroids(game, ASTEROID_SIZE, 2, 100);
         }
         console.log("asteroids count:" + this.asteroids.length);
+        /**
+         * @param {Asteroid} item
+         */
         this.asteroids = this.asteroids.filter(item => {
             item.update();
-            if (item.y > game.height) {
+
+            if (item.getY() > game.height) {
                 return false;
             }
-            if (game.colisionManager.hitTest(game.player, item)) {
+            if (game.player && game.colisionManager.hitTest(game.player, item)) {
                 console.log("hit");
-                game.player.hit(5);
+                game.player.hit(50);
                 return false;
             }
 
@@ -56,5 +60,9 @@ class GameMap {
             var factor = height / maxSize;
             this.asteroids.push(new Asteroid(x, y, Math.floor(height * 1.3), height, "assets/asteroid.png", life + life * factor));
         }
+    }
+
+    clear() {
+        this.asteroids = [];
     }
 }

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <meta charset="UTF-8"> 
+        <link rel="stylesheet" type="text/css" href="lib/assert.css" />
+        <script type="text/javascript" src="lib/Assertion.js" ></script>
+        <script type="text/javascript" src="../js/shape/Shape.js" ></script>
+        <script type="text/javascript" >
+            function loadTest() {
+                /**
+                 * @type Rectangle
+                 */
+                var shape1 = new Rectangle(300, 100, 300, 200);
+                var shape2 = new Triangle(new Point(450, 250), new Point(500, 350), new Point(400, 350));
+                var shape3 = new Triangle(new Point(400, 50), new Point(450, 150), new Point(350, 150));
+                var shape4 = new Triangle(new Point(610, 250), new Point(660, 350), new Point(560, 350));
+                var shape5 = new Triangle(new Point(270, 250), new Point(320, 350), new Point(220, 350));
+
+                /**
+                 * @type HTMLCanvasElement
+                 */
+                var canvas = document.getElementById("testCanvas");
+                /**
+                 * @type CanvasRenderingContext2D
+                 */
+                var ctx = canvas.getContext("2d");
+                drawRectangle(shape1, ctx, "red", 0.7);
+                drawTriangle(shape2, ctx, "rgb(60, 180, 250)", 0.5);
+                drawTriangle(shape3, ctx, "rgb(60, 100, 250)", 0.5);
+                drawTriangle(shape4, ctx, "rgb(160, 100, 250)", 0.5);
+                drawTriangle(shape5, ctx, "rgb(250, 100, 250)", 0.5);
+
+                assertEquals(shape1.intersect(shape2), true);
+                assertEquals(shape2.intersect(shape1), true);
+
+                assertEquals(shape1.intersect(shape3), true);
+                assertEquals(shape3.intersect(shape1), true);
+
+                assertEquals(shape1.intersect(shape4), true);
+                assertEquals(shape4.intersect(shape1), true);
+
+                assertEquals(shape1.intersect(shape5), false);
+                assertEquals(shape5.intersect(shape1), false);
+            }
+
+            /**
+             * 
+             * @param {Rectangle} shape 
+             * @param {CanvasRenderingContext2D} context
+             * @param {string} color
+             */
+            function drawRectangle(shape, context, color, alpha = 1.0) {
+                context.fillStyle = color;
+                context.globalAlpha = alpha;
+                context.fillRect(shape.x, shape.y, shape.width, shape.height);
+            }
+
+            /**
+             * 
+             * @param {Triangle} shape 
+             * @param {CanvasRenderingContext2D} context
+             * @param {string} color
+             */
+             function drawTriangle(shape, context, color, alpha = 1.0) {
+				context.fillStyle = color;
+                context.globalAlpha = alpha;
+                context.beginPath();
+                context.moveTo(shape.v1.x, shape.v1.y);
+				context.lineTo(shape.v2.x, shape.v2.y);
+				context.lineTo(shape.v3.x, shape.v3.y);
+                context.closePath();
+                context.fill();
+                
+            }
+        </script>
+    </head>
+    <body onload="loadTest()">
+        <canvas id="testCanvas" width="1000" height="400" ></canvas>
+        <div id="testResult">
+        </div>
+    </body>
+</html>

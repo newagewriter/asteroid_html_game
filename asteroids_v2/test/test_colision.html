@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <meta charset="UTF-8"> 
+        <link rel="stylesheet" type="text/css" href="lib/assert.css" />
+        <script type="text/javascript" src="lib/Assertion.js" ></script>
+        <script type="text/javascript" src="../js/shape/Shape.js" ></script>
+        <script type="text/javascript" >
+            function loadTest() {
+                /**
+                 * @type Rectangle
+                 */
+                var shape1 = new Rectangle(300, 100, 300, 200);
+                var shape2 = new Rectangle(250, 50, 100, 100);
+                var shape3 = new Rectangle(510, 50, 200, 100);
+                var shape4 = new Rectangle(220, 140, 40, 40);
+                var shape5 = new Rectangle(230, 155, 20, 20);
+                var shape6 = new Rectangle(560, 255, 100, 70);
+                var shape7 = new Rectangle(230, 255, 100, 70);
+                var shape8 = new Rectangle(470, 275, 60, 80);
+
+                var shape9 = new Triangle(new Point(350, 250), new Point(400, 350), new Point(300, 350));
+
+                /**
+                 * @type HTMLCanvasElement
+                 */
+                var canvas = document.getElementById("testCanvas");
+                /**
+                 * @type CanvasRenderingContext2D
+                 */
+                var ctx = canvas.getContext("2d");
+                drawRectangle(shape1, ctx, "red", 0.7);
+                drawRectangle(shape2, ctx, "blue", 0.5);
+                drawRectangle(shape3, ctx, "green", 0.5);
+                drawRectangle(shape4, ctx, "black", 0.5);
+                drawRectangle(shape5, ctx, "green", 0.5);
+                drawRectangle(shape6, ctx, "rgb(100, 200, 100)", 0.5);
+                drawRectangle(shape7, ctx, "rgb(150, 50, 100)", 0.5);
+                drawRectangle(shape8, ctx, "rgb(50, 150, 250)", 0.5);
+                drawTriangle(shape9, ctx, "rgb(60, 180, 250)", 0.5);
+
+                assertEquals(shape1.intersect(shape2), true);
+                assertEquals(shape2.intersect(shape1), true);
+
+                assertEquals(shape1.intersect(shape3), true);
+                assertEquals(shape3.intersect(shape1), true);
+
+                assertEquals(shape2.intersect(shape3), false);
+                assertEquals(shape3.intersect(shape2), false);
+
+                assertEquals(shape2.intersect(shape4), true);
+                assertEquals(shape4.intersect(shape2), true);
+
+                assertEquals(shape4.intersect(shape5), true);
+                assertEquals(shape5.intersect(shape4), true);
+
+                assertEquals(shape1.intersect(shape6), true);
+                assertEquals(shape6.intersect(shape1), true);
+
+                assertEquals(shape1.intersect(shape7), true);
+                assertEquals(shape7.intersect(shape1), true);
+
+                assertEquals(shape1.intersect(shape8), true);
+                assertEquals(shape8.intersect(shape1), true);
+
+                assertEquals(shape1.intersect(shape9), true);
+                assertEquals(shape9.intersect(shape1), true);
+            }
+
+            /**
+             * 
+             * @param {Rectangle} shape 
+             * @param {CanvasRenderingContext2D} context
+             * @param {string} color
+             */
+            function drawRectangle(shape, context, color, alpha = 1.0) {
+                context.fillStyle = color;
+                context.globalAlpha = alpha;
+                context.fillRect(shape.x, shape.y, shape.width, shape.height);
+            }
+
+            /**
+             * 
+             * @param {Triangle} shape 
+             * @param {CanvasRenderingContext2D} context
+             * @param {string} color
+             */
+             function drawTriangle(shape, context, color, alpha = 1.0) {
+				context.fillStyle = color;
+                context.globalAlpha = alpha;
+                context.beginPath();
+                context.moveTo(shape.v1.x, shape.v1.y);
+				context.lineTo(shape.v2.x, shape.v2.y);
+				context.lineTo(shape.v3.x, shape.v3.y);
+                context.closePath();
+                context.fill();
+                
+            }
+        </script>
+    </head>
+    <body onload="loadTest()">
+        <canvas id="testCanvas" width="1000" height="400" ></canvas>
+        <div id="testResult">
+        </div>
+    </body>
+</html>

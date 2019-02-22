@@ -61,7 +61,7 @@ class Game {
         this.started = true;
         this.frameNo = 0;
         gameDiv.appendChild(this.canvas);
-        requestAnimationFrame(renderFrame);
+        requestAnimationFrame(this.renderFrame.bind(this));
         this.createPlayer();
         window.addEventListener("keydown", this.onKeyDown);
         window.addEventListener("keyup", this.onKeyUp);
@@ -71,7 +71,7 @@ class Game {
 
     stop() {
         this.started = false;
-        cancelAnimationFrame(renderFrame);
+        cancelAnimationFrame(this.renderFrame);
         this.canvas.parentElement.removeChild(this.canvas);
         window.removeEventListener("keydown", this.onKeyDown);
         window.removeEventListener("keyup", this.onKeyUp);
@@ -91,8 +91,18 @@ class Game {
      */
     update(timestamp) {
         this.map.update(this, this.frameNo);
-        this.movePlayerIfNeeded();
-        this.player.update();
+        if (this.player) {
+            this.movePlayerIfNeeded();
+            this.player.update();
+            if (this.player.life <= 0) {
+                this.playerLife = null;
+                this.gameOver();
+            }
+            if (this.playerLife)  {
+                this.playerLife.shape.width = this.player.life;
+            }
+        }
+        
         this.components.forEach(component => {
             //component.y += GAME_GRAVITY;
             component.update();
@@ -103,14 +113,15 @@ class Game {
 
     draw() {
         if (this.bufferCtx) {
-            this.drawBackground(this.bufferCanvas.getContext("2d"));
+            this.drawBackground(this.bufferCtx);
             this.map.draw(this.bufferCtx);
-            this.player.draw(this.bufferCtx);
+            if (this.player)
+                this.player.draw(this.bufferCtx);
             this.components.forEach( component => {
                 component.draw(this.bufferCtx);
             });
 
-            this.drawInfoText(this.bufferCanvas);
+            this.drawInfoText(this.bufferCtx);
 
             if (this.playerLife)  {
                 this.playerLife.draw(this.bufferCtx);
@@ -134,7 +145,9 @@ class Game {
      * Method set info text that will be display in next frame
      * @param {string} text 
      */
-    showInfoText(text) {
+    showInfoText(text, time = 0) {
+        var date = new Date();
+        this.textTime = date.getTime() + time;
         this.infoText = text;
     }
 
@@ -144,18 +157,27 @@ class Game {
      */
     drawInfoText(ctx) {
         if (this.infoText) {
-            var centerX = (this.width - ctx.measureText(this.infoText).width ) / 2;
-            var centerY = this.height / 2;
             ctx.font = "30px Consolas";
+            var textWidth = ctx.measureText(this.infoText).width;
+            console.log("text length:" + textWidth);
+            console.log("WIDTH:" + this.width);
+            var centerX = (this.width - textWidth) / 2;
+            var centerY = this.height / 2;
             ctx.fillStyle = "white";
             ctx.fillText(this.infoText, centerX, centerY);
-            this.infoText = null;
+            var date = new Date();
+            if (this.textTime < date.getTime()) {
+                this.infoText = null;
+            }
         }
     }
 
     createPlayer() {
         this.player = new Player(this.width / 2, this.height - 100, 50, 60, 100);
-        this.playerLife = new Component(10, this.height - 40, 100, 20, "red");
+        /**
+         * @type Component
+         */
+        this.playerLife = new Component(10, this.height - 40, this.player.life, 20, "red");
     }
 
     loadMap() {
@@ -190,17 +212,25 @@ class Game {
         //     this.player.speedY += PLAYER_SPEED;
         // }
     }
-}
 
-/**
- * 
- * @param {number} timestamp 
- */
-function renderFrame(timestamp) {
-    if (game.started) {
-        game.update(timestamp);
-        game.draw();
-    
-        requestAnimationFrame(this.renderFrame);
+    gameOver() {
+        this.showInfoText("Game Over", 3000);
+        this.started = false;
+        this.map.clear();
+        var game = this;
+        game.player = null;
+        setTimeout(() => game.stop(), 3000);
     }
+    /**
+     * 
+     * @param {number} timestamp 
+     */
+    renderFrame(timestamp) {
+        if (this.started) {
+            this.update(timestamp);
+            this.draw();
+        
+            requestAnimationFrame(this.renderFrame.bind(this));
+        }
+   }
 }
