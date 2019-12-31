@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="UTF-8"> 
+    <style>
+        body {
+            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif
+        }
+    </style>
+    <script>
+        // In renderer process (web page).
+        const { ipcRenderer, remote } = require('electron')
+
+        ipcRenderer.on('asynchronous-reply', (event, arg) => {
+            console.log(arg) // prints "pong"
+        })
+
+        function onButtonClick(item) {
+            console.log("button:" + item.id)
+            ipcRenderer.send('action-send', item.id)
+        }
+
+        function openDevTools() {
+            remote.app.openDevTools();
+        }
+    </script>
+</head>
+<body>
+    <div id="startScreen">
+        <H1>Menu</H1>
+        <ul>
+            <li><button id="start" onclick="onButtonClick(this)">Start</button></li>
+            <li><button id="exit" onclick="onButtonClick(this)">Exit</button></li>
+        </ul>
+    </div>
+</body>
+</html>

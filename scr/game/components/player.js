@@ -1,3 +1,5 @@
+
+const GAME_FPS = 60;
 /**
  * Player class
  */
@@ -103,7 +105,7 @@ class Player extends CImage {
         super.update(canvas);
         ctx.restore();
         if (this.shieldBonus != null) {
-            this.shieldBonus.time -= 1000 / this.game.fps;
+            this.shieldBonus.time -= 1000 / GAME_FPS;
             if (this.shieldBonus.time <= 0) {
                 this.shieldBonus = null;
             } else {
@@ -111,7 +113,7 @@ class Player extends CImage {
             }
         }
         if (this.shootBonus != null) {
-            this.shootBonus.time -= 1000 / this.game.fps;
+            this.shootBonus.time -= 1000 / GAME_FPS;
             if (this.shootBonus.time <= 0) {
                 this.shootBonus = null;
             }

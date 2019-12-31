@@ -4,7 +4,7 @@
   "description": "Game when user must avoid asteroids",
   "main": "app.js",
   "devDependencies": {
-    "electron": "^4.0.1"
+    "electron": "^4.2.12"
   },
   "scripts": {
     "start": "./node_modules/.bin/electron ."

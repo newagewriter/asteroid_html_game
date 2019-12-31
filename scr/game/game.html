@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="UTF-8"> 
+    <style>
+        body {
+            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif
+        }
+        canvas {
+            border: 1px solid #d3d3d3;
+            background-color: #f1f1f1;
+            margin: 5px auto;
+        }
+    </style>
+    <script type="text/javascript" src="lib/include.js" ></script>
+    <script type="text/javascript" src="components/component.js" ></script>
+    <script type="text/javascript" src="components/rocket.js" ></script>
+    <script type="text/javascript" src="components/sound.js" ></script>
+    <script type="text/javascript" src="components/bonuses.js" ></script>
+    <script type="text/javascript" src="components/player.js" ></script>
+    <script type="text/javascript" src="components/enemy.js" ></script>
+    <script type="text/javascript" src="components/asteroid.js" ></script>
+    <script type="text/javascript" src="imageLoader.js" ></script>
+    <script type="text/javascript" src="game_manager.js" ></script>
+    <script type="text/javascript" src="maps.js" ></script>
+    <script type="text/javascript" src="gamearea.js" ></script>
+    <script type="text/javascript" src="game.js" ></script>
+    </head>
+<body>
+    <div id="startScreen" style="display: none;">
+        <H1>Hello</H1>
+        <p>Please put your name here: <input id="userName" type="text"/></p>
+        <button id="startAgain" onclick="onStartClicked(this)" >Start game</button>
+    </div>
+    <div>
+        <button onclick="openDevTools()"><img src="../assets/tool_icon.png" width="20px" height="20xp"/></button>
+        <button onclick="muteSound()"><img id="mute_sound_img" src="../assets/sound.jpg" width="20px" height="20xp"/></button>
+    </div>
+</body>
+</html>

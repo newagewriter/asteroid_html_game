@@ -33,7 +33,7 @@ class GameArea {
         player.attachTo(this);
         this.listener = renderCallback;
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
-        requestAnimationFrame(this.onGameUpdate);
+        requestAnimationFrame( () => this.onGameUpdate());
         window.addEventListener("keydown", this.keyDownCallback);
         window.addEventListener("keyup", this.keyUpCallback);
     }

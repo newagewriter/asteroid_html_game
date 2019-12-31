@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="UTF-8"> 
+    <style>
+        body {
+            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif
+        }
+        #endScreen {
+            margin: 4px auto;
+            width: fit-content;
+        }
+
+        #endScreen h1 {
+            font-size: 50px;
+        }
+
+        #endScreen p {
+            font-size: 20px;
+        }
+        #endScreen #actualScore {
+            color: #77ff11;
+        }
+    </style>
+    <script>
+        // In renderer process (web page).
+        const { ipcRenderer, remote } = require('electron')
+
+        ipcRenderer.on('asynchronous-reply', (event, arg) => {
+            console.log(arg) // prints "pong"
+        })
+
+        function sendAction(action) {
+            ipcRenderer.send('action-send', action);
+        }
+
+        function startGame() {
+            sendAction("start");
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var userName = remote.app.getUserName();
+            console.log("username:" + userName);
+            var lastScore = remote.app.getLastScore();
+            var list = document.getElementById("lastScores");
+            var userScores = remote.app.getUserScores();
+            userScores.forEach(value => {
+                var newLi = document.createElement("li");
+                newLi.innerHTML = value.userName + " : " + value.score;
+                if (value.userName == userName && value.score == lastScore) {
+                    newLi.id = "actualScore";
+                }
+                list.appendChild(newLi);
+            });
+            var currentScore = document.getElementById("yourScore");
+            currentScore.innerHTML = lastScore;
+        });
+    </script>
+</head>
+<body>
+    <div id="endScreen">
+        <h1>Game Over</h1>
+        <p>Your score: <b id="yourScore"></b></p>
+        <button id="startAgain" onclick="startGame()" >Try again</button>
+
+        <H2>Last scores:</H2>
+        <ol id="lastScores"></ol>
+    </div>
+    <div>
+        <button onclick="remote.app.openDevTools()"><img src="../assets/tool_icon.png" width="20px" height="20xp"/></button>
+    </div>
+</body>
+</html>

@@ -1,4 +1,5 @@
-const { remote } = include('electron');
+const { ipcRenderer, remote } = include('electron');
+
 include('./extension');
 const PLAYER_IMG_SOURCE = "assets/player.png";
 const PLAYER_IMG_SOURCE_LEFT = "assets/player_left.png";
@@ -6,13 +7,11 @@ const PLAYER_IMG_SOURCE_RIGHT = "assets/player_right.png";
 const PLAYER_SPEED = 6;
 const PLAYER_WIDTH = 35;
 const PLAYER_HEIGHT = 50;
-const GAME_FPS = 60;
 
 const GAME_WIDTH = 700;
 const GAME_HEIGHT = 900;
 const MAP_CHANGE_SCORE = 1000;
 
-var userScores = [];
 /**
  * @type Player
  */
@@ -27,6 +26,16 @@ var muted = false;
  * @type GameArea
  */
 var myGameArea = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("onload");
+    if (remote.app.getUserName() == null) {
+        showStartScreen();
+    } else {
+        userName = remote.app.getUserName();
+        startGame();
+    }
+});
 
 var renderCallback = {
     onUpdate : function() {
@@ -57,12 +66,19 @@ var renderCallback = {
     }
 };
 
+function showStartScreen() {
+    document.getElementById("startScreen").style.display = "block";
+}
+
+function onStartClicked(item) {
+    userName = document.getElementById("userName").value;
+    ipcRenderer.send('set-username', userName);
+    startGame();
+}
+
 function startGame() {
     keys = [];
-    userName = document.getElementById("userName").value;
     document.getElementById("startScreen").style.display = "none";
-    var screen = document.getElementById("endScreen");
-    screen.style.display = "none";
     myGameArea = new GameArea(GAME_WIDTH, GAME_HEIGHT);
     player = new Player(PLAYER_WIDTH, PLAYER_HEIGHT, PLAYER_IMG_SOURCE, (myGameArea.width - PLAYER_WIDTH) / 2, myGameArea.height - 20);
     if (mySound == null)
@@ -74,38 +90,12 @@ function startGame() {
 }
 
 function gameOver() {
-    var ctx = myGameArea.canvas.getContext("2d");
-    var textSize = 60;
-    var endText = "Game Over";
-    ctx.font = textSize + "px Consolas";
-    ctx.fillStyle = this.color;
-    var centerX = (myGameArea.width - ctx.measureText(endText).width ) / 2;
-    var centerY = myGameArea.height / 2;
-    ctx.strokeText(endText, centerX, centerY);
     myGameArea.stop();
     player.detached(myGameArea);
     cancelAnimationFrame(onRender);
-        
-    var screen = document.getElementById("endScreen");
-    screen.style.display = "block";
-    document.getElementById("yourScore").innerHTML = Math.floor(myGameArea.score);
-    userScores.push({
-        score: Math.floor(myGameArea.score),
-        userName: userName
-    });
-    userScores = userScores.sort((x1, x2) => x2.score - x1.score );
-    var list = document.getElementById("lastScores");
-    while( list.firstChild ) {
-        list.removeChild( list.firstChild );
-    }
-    userScores.forEach(value => {
-        var newLi = document.createElement("li");
-        newLi.innerHTML = value.userName + " : " + value.score;
-        if (value.userName == userName && value.score == myGameArea.score) {
-            newLi.id = "actualScore";
-        }
-        list.appendChild(newLi);
-    });
+
+    var score = Math.floor(myGameArea.score);
+    ipcRenderer.send('gameover-action', score);
 }
 
 function movePlayerIfNeeded(player) {
@@ -229,9 +219,9 @@ function muteSound() {
         item.muted = muted;
     });
     if (muted) {
-        document.getElementById("mute_sound_img").src = "assets/mute_sound.jpg";
+        document.getElementById("mute_sound_img").src = "../assets/mute_sound.jpg";
     } else {
-        document.getElementById("mute_sound_img").src = "assets/sound.jpg";
+        document.getElementById("mute_sound_img").src = "../assets/sound.jpg";
     }
 }
 
